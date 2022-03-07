@@ -18,9 +18,6 @@ jobs:
     outputs:
       OPEN_PRS: ${{ steps.open_pr.outputs.PR_COUNT }}
     steps:
-      - name: Debug
-        run: env '${{ toJSON(github) }}'
-        
       - name: Get Open PRs
         uses: octokit/request-action@v2.x
         id: get_open_prs
