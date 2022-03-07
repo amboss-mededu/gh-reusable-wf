@@ -6,7 +6,8 @@ on:
         type: string
         required: true
     outputs:
-      OPEN_PRS: ${{ jobs.open_prs.outputs.OPEN_PRS }}
+      OPEN_PRS:
+        value: ${{ jobs.open_prs.outputs.OPEN_PRS }}
 jobs:
   open_prs:
     name: Get Open PRs
