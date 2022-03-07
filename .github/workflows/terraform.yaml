@@ -1,0 +1,122 @@
+name: Terraform
+on:
+  workflow_call:
+    inputs:
+      DIR: 
+        required: true
+        type: string
+    secrets:
+      AWS_ACCOUNT_ID:
+        required: true
+## Token Permissions required
+#    permissions:
+#      id-token: write
+#      contents: write
+#      pull-requests: write
+#      packages: read
+
+jobs:
+  terraform:
+    name: Terraform workflow
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.DIR }}
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
+      packages: read
+    steps:
+      - name: Get Code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/devops
+          role-session-name: GithubActions-Terraform-Plan
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan --var-file=${{ github.workspace }}/account_info.tfvars --var region=${{ env.REGION }}  -no-color -lock-timeout=300s -out=${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
+        continue-on-error: true
+ 
+      - name: Terraform Refresh
+        if: contains(steps.plan.outputs.stdout, 'has changed')
+        run: |
+          terraform refresh
+          terraform plan -no-color -lock-timeout=300s -out=${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
+        continue-on-error: true
+
+      - name: Post Plan output to PR
+        uses: actions/github-script@v5
+        if: github.event_name == 'pull_request' && github.event.pull_request.merged != true
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outputs.stdout }}\`
+            #### Terraform Plan Networking📖\`${{ steps.plan.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })     
+
+      - name: Terraform Apply
+        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true
+        id: apply
+        run: terraform apply ${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
+        
+      - name: Post Apply Output to PR
+        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true
+        uses: actions/github-script@v5
+        env:
+          APPLY: "terraform\n${{ steps.apply.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Apply Networking📖\`${{ steps.apply.outcome }}\`
+
+            <details><summary>Show Apply</summary>
+
+            \`\`\`\n
+            ${process.env.APPLY}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
