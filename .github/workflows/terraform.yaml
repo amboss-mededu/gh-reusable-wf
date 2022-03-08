@@ -71,7 +71,7 @@ jobs:
         id: plan
         run: |
           terraform plan \
-            -var-file=${{ github.workspace }}/account_info.tfvars \
+            -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
             -var 'region=${{ inputs.REGION }}'  \
             -no-color -lock-timeout=300s \
             -out=${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
