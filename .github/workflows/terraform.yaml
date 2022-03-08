@@ -88,11 +88,12 @@ jobs:
         if: contains(steps.plan.outputs.stdout, 'has changed')
         run: |
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
-          terraform refresh -var-file=${{ github.workspace }}/account_info.tfvars \
+          terraform refresh \
+            -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
             -var 'region=${{ inputs.REGION }}'  \
             -no-color -lock-timeout=300s            
           terraform plan \
-            -var-file=${{ github.workspace }}/account_info.tfvars \
+            -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
             -var 'region=${{ inputs.REGION }}'  \
             -no-color -lock-timeout=300s \
             -out=${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
