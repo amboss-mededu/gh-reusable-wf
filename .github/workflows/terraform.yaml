@@ -11,6 +11,8 @@ on:
     secrets:
       AWS_ACCOUNT_ID:
         required: true
+      DEPLOY_SSH_KEY:
+        required: false
 ## Token Permissions required
 #    permissions:
 #      id-token: write
@@ -25,7 +27,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: ${{ inputs.region }}/${{ inputs.DIR }}
+        working-directory: deployment/${{ inputs.region }}/${{ inputs.DIR }}
     permissions:
       id-token: write
       contents: write
@@ -34,18 +36,22 @@ jobs:
     steps:
       - name: Get Code
         uses: actions/checkout@v2
+        with:
+          path: deployment
 
       - name: Get Template Code
+        if: inputs.DEPLOY_SSH_KEY
         uses: actions/checkout@v2
         with:
           repository: amboss-mededu/infra-template
           ssh-key: ${{ secrets.TEMPLATE_DEPLOY_KEY }}
-          path: infra-template
-          refs: main
+          path: template
+          ref: main
           ssh-strict: false
           
       - name: Copy Code
-        run: cp -n ${{ github.workspace }}/infra-template/${{ inputs.DIR }}/* ${{ github.workspace }}/${{ inputs.REGION }}/${{ inputs.DIR }}/*
+        if: inputs.DEPLOY_SSH_KEY
+        run: cp -a -n ${{ github.workspace }}/template/${{ inputs.DIR }}/* ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}/
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
