@@ -45,20 +45,17 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: deployment
-
-      - name: Get Template Code
-        if: contains(inputs.DEPLOY_SSH_KEY,'PRIVATE') == false
-        uses: actions/checkout@v3
-        with:
-          repository: amboss-mededu/infra-template
-          ssh-key: ${{ secrets.TEMPLATE_DEPLOY_KEY }}
-          path: template
-          ref: main
-          ssh-strict: false
           
+      - name: Add deploy key
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+      
       - name: Copy Code
         if: contains(inputs.DEPLOY_SSH_KEY,'PRIVATE') == false
-        run: cp -a -n ${{ github.workspace }}/template/${{ inputs.DIR }}/* ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}/ -v
+        run: |
+          git checkout git@github.com:amboss-mededu/infra-template
+          cp -a -n ${{ github.workspace }}/template/${{ inputs.DIR }}/* ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}/ -v
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
