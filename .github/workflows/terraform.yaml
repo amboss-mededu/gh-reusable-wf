@@ -47,7 +47,7 @@ jobs:
           path: deployment
 
       - name: Get Template Code
-        if: inputs.DEPLOY_SSH_KEY
+        if: contains(inputs.DEPLOY_SSH_KEY,'PRIVATE') == false
         uses: actions/checkout@v2
         with:
           repository: amboss-mededu/infra-template
@@ -57,7 +57,7 @@ jobs:
           ssh-strict: false
           
       - name: Copy Code
-        if: inputs.DEPLOY_SSH_KEY
+        if: contains(inputs.DEPLOY_SSH_KEY,'PRIVATE') == false
         run: cp -a -n ${{ github.workspace }}/template/${{ inputs.DIR }}/* ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}/ -v
 
       - name: Configure AWS Credentials
@@ -81,7 +81,7 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: |
-          pwd
+          cd deployment/${{ inputs.region }}/${{ inputs.DIR }}
           terraform plan \
             -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
             -var 'region=${{ inputs.REGION }}'  \
@@ -92,6 +92,7 @@ jobs:
       - name: Terraform Refresh
         if: contains(steps.plan.outputs.stdout, 'has changed')
         run: |
+          cd deployment/${{ inputs.region }}/${{ inputs.DIR }}
           terraform refresh
           terraform plan \
             -var-file=${{ github.workspace }}/account_info.tfvars \
@@ -133,7 +134,9 @@ jobs:
       - name: Terraform Apply
         if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true
         id: apply
-        run: terraform apply ${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
+        run: |
+          cd deployment/${{ inputs.region }}/${{ inputs.DIR }}
+          terraform apply ${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
 
       - name: Post Apply Output to PR
         if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true
