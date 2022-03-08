@@ -32,7 +32,6 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: deployment/${{ inputs.region }}/${{ inputs.DIR }}
     outputs:
       PLAN_OUTCOME: ${{ steps.plan.outcome }}
       APPLY_OUTCOME: ${{ steps.apply.outcome }}
@@ -59,7 +58,7 @@ jobs:
           
       - name: Copy Code
         if: inputs.DEPLOY_SSH_KEY
-        run: cp -a -n ${{ github.workspace }}/template/${{ inputs.DIR }}/* ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}/
+        run: cp -a -n ${{ github.workspace }}/template/${{ inputs.DIR }}/* ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}/ -v
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -74,12 +73,15 @@ jobs:
       - name: Terraform Init
         id: init
         run: |
+          cd deployment/${{ inputs.region }}/${{ inputs.DIR }}
+          pwd
           ls -l
           terraform init 
 
       - name: Terraform Plan
         id: plan
         run: |
+          pwd
           terraform plan \
             -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
             -var 'region=${{ inputs.REGION }}'  \
@@ -132,7 +134,7 @@ jobs:
         if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true
         id: apply
         run: terraform apply ${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
-        
+
       - name: Post Apply Output to PR
         if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true
         uses: actions/github-script@v5
