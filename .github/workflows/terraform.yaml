@@ -62,7 +62,7 @@ jobs:
         with:
           aws-region: eu-west-1
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/devops
-          role-session-name: GithubActions-Terraform-Plan
+          role-session-name: GithubActions-Terraform
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
