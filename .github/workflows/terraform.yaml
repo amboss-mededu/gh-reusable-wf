@@ -40,6 +40,8 @@ jobs:
         with:
           repository: amboss-mededu/infra-template
           ssh-key: ${{ secrets.TEMPLATE_DEPLOY_KEY }}
+          path: infra-template
+          refs: main
           ssh-strict: false
           
       - name: Copy Code
