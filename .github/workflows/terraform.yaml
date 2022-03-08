@@ -99,7 +99,7 @@ jobs:
             -out=${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
         continue-on-error: true
 
-      - name: AWS Auth
+      - name: AWS Auth for eks
         if: contains(inputs.DIR,'eks_addons')
         run: |
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
@@ -108,11 +108,11 @@ jobs:
             terraform apply \
               -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
               -var 'region=${{ inputs.REGION }}'  \
-               -target=data.aws_eks_cluster.eks
+              -target=data.aws_eks_cluster.eks
             terraform import kubernetes_config_map_v1.aws_auth kube-system/aws-auth \
               -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
-              -var 'region=${{ inputs.REGION }}'  \
-        fi
+              -var 'region=${{ inputs.REGION }}' 
+          fi
 
       - name: Post Plan output to PR
         uses: actions/github-script@v5
