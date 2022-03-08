@@ -25,15 +25,25 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: ${{ inputs.DIR }}
+        working-directory: ${{ inputs.region }}/${{ inputs.DIR }}
     permissions:
       id-token: write
       contents: write
       pull-requests: write
       packages: read
     steps:
+      - name: Get Template Code
+        uses: actions/checkout@v2
+
       - name: Get Code
         uses: actions/checkout@v2
+        with:
+          repository: amboss-mededu/infra-template
+          ssh-key: ${{ secrets.TEMPLATE_DEPLOY_KEY }}
+          ssh-strict: false
+          
+      - name: Copy Code
+        run: cp -n ${{ github.workspace }}/infra-template/${{ inputs.DIR }}/* ${{ github.workspace }}/${{ inputs.REGION }}/${{ inputs.DIR }}/*
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -47,18 +57,27 @@ jobs:
 
       - name: Terraform Init
         id: init
-        run: terraform init
+        run: terraform init 
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan --var-file=${{ github.workspace }}/account_info.tfvars --var region=${{ inputs.REGION }}  -no-color -lock-timeout=300s -out=${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
+        run: |
+          terraform plan \
+            -var-file=${{ github.workspace }}/account_info.tfvars \
+            -var 'region=${{ inputs.REGION }}'  \
+            -no-color -lock-timeout=300s \
+            -out=${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
         continue-on-error: true
  
       - name: Terraform Refresh
         if: contains(steps.plan.outputs.stdout, 'has changed')
         run: |
           terraform refresh
-          terraform plan -no-color -lock-timeout=300s -out=${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
+          terraform plan \
+            -var-file=${{ github.workspace }}/account_info.tfvars \
+            -var 'region=${{ inputs.REGION }}'  \
+            -no-color -lock-timeout=300s \
+            -out=${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
         continue-on-error: true
 
       - name: Post Plan output to PR
