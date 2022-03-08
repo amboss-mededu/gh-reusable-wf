@@ -42,13 +42,13 @@ jobs:
       packages: read
     steps:
       - name: Get Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: deployment
 
       - name: Get Template Code
         if: contains(inputs.DEPLOY_SSH_KEY,'PRIVATE') == false
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: amboss-mededu/infra-template
           ssh-key: ${{ secrets.TEMPLATE_DEPLOY_KEY }}
@@ -73,7 +73,7 @@ jobs:
       - name: Terraform Init
         id: init
         run: |
-          cd deployment/${{ inputs.region }}/${{ inputs.DIR }}
+          cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           pwd
           ls -l
           terraform init 
@@ -81,7 +81,7 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: |
-          cd deployment/${{ inputs.region }}/${{ inputs.DIR }}
+          cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           terraform plan \
             -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
             -var 'region=${{ inputs.REGION }}'  \
@@ -92,7 +92,7 @@ jobs:
       - name: Terraform Refresh
         if: contains(steps.plan.outputs.stdout, 'has changed')
         run: |
-          cd deployment/${{ inputs.region }}/${{ inputs.DIR }}
+          cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           terraform refresh
           terraform plan \
             -var-file=${{ github.workspace }}/account_info.tfvars \
@@ -135,7 +135,7 @@ jobs:
         if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true
         id: apply
         run: |
-          cd deployment/${{ inputs.region }}/${{ inputs.DIR }}
+          cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           terraform apply ${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
 
       - name: Post Apply Output to PR
