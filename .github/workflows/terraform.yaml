@@ -77,7 +77,7 @@ jobs:
         id: plan
         run: |
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
-          terraform plan \
+          TF_LOG=debug terraform plan \
             -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
             -var 'region=${{ inputs.REGION }}'  \
             -no-color -lock-timeout=300s \
