@@ -109,9 +109,7 @@ jobs:
               -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
               -var 'region=${{ inputs.REGION }}'  \
               -target=data.aws_eks_cluster.eks
-            terraform import kubernetes_config_map_v1.aws_auth kube-system/aws-auth \
-              -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
-              -var 'region=${{ inputs.REGION }}' 
+            terraform import kubernetes_config_map_v1.aws_auth kube-system/aws-auth
           fi
 
       - name: Post Plan output to PR
