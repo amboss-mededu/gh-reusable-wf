@@ -77,7 +77,7 @@ jobs:
         if: contains(inputs.DIR,'eks_addons')
         run: |
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
-          ${{ env.TERRAFORM_CLI_PATH }}
+          ls ${{ env.TERRAFORM_CLI_PATH }}
           if [[ ! $(terraform state list |grep kubernetes_config_map_v1.aws_auth) ]]
           then
             terraform apply \
