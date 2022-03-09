@@ -57,13 +57,13 @@ jobs:
           fi
 
       - name: Add deploy key
-        if: steps.check_dir.outputs.execute  == 'true'
+        if: contains(inputs.DEPLOY_SSH_KEY,'PRIVATE') == true && steps.check_dir.outputs.execute  == 'true' 
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
       
       - name: Copy Code
-        if: contains(inputs.DEPLOY_SSH_KEY,'PRIVATE') == false && steps.check_dir.outputs.execute  == 'true' 
+        if: contains(inputs.DEPLOY_SSH_KEY,'PRIVATE') == true && steps.check_dir.outputs.execute  == 'true' 
         run: |
           git clone git@github.com:amboss-mededu/infra-template template
           cp -a -n ${{ github.workspace }}/template/${{ inputs.DIR }}/* ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}/
