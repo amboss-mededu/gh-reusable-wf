@@ -57,20 +57,19 @@ jobs:
           fi
 
       - name: Add deploy key
-        if: steps.check_dir.outputs.execute
+        if: steps.check_dir.outputs.execute  == 'true'
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
       
       - name: Copy Code
-        if: contains(inputs.DEPLOY_SSH_KEY,'PRIVATE') == false && steps.check_dir.outputs.execute
+        if: contains(inputs.DEPLOY_SSH_KEY,'PRIVATE') == false && steps.check_dir.outputs.execute  == 'true' 
         run: |
-          echo '${{ steps.check_dir.outputs.execute }}'
           git clone git@github.com:amboss-mededu/infra-template template
           cp -a -n ${{ github.workspace }}/template/${{ inputs.DIR }}/* ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}/
 
       - name: Configure AWS Credentials
-        if: steps.check_dir.outputs.execute
+        if: steps.check_dir.outputs.execute  == 'true'
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: eu-west-1
@@ -78,18 +77,18 @@ jobs:
           role-session-name: GithubActions-Terraform
 
       - name: Setup Terraform
-        if: steps.check_dir.outputs.execute
+        if: steps.check_dir.outputs.execute  == 'true'
         uses: hashicorp/setup-terraform@v1
 
       - name: Terraform Init
-        if: steps.check_dir.outputs.execute
+        if: steps.check_dir.outputs.execute  == 'true'
         id: init
         run: |
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           terraform init 
 
       - name: AWS Auth for eks
-        if: steps.check_dir.outputs.execute && contains(inputs.DIR,'eks_addons')
+        if: contains(inputs.DIR,'eks_addons') && steps.check_dir.outputs.execute  == 'true'
         run: |
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}          
           if [[ ! $(terraform state list |grep kubernetes_config_map_v1.aws_auth) ]]
@@ -100,7 +99,7 @@ jobs:
         continue-on-error: true
 
       - name: Terraform Plan
-        if: steps.check_dir.outputs.execute
+        if: steps.check_dir.outputs.execute  == 'true'
         id: plan
         run: |
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
@@ -112,7 +111,7 @@ jobs:
         continue-on-error: true
 
       - name: Terraform Refresh
-        if: contains(steps.plan.outputs.stdout, 'has changed') && steps.check_dir.outputs.execute
+        if: contains(steps.plan.outputs.stdout, 'has changed') && steps.check_dir.outputs.execute  == 'true'
         run: |
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           terraform refresh \
@@ -128,7 +127,7 @@ jobs:
 
       - name: Post Plan output to PR
         uses: actions/github-script@v5
-        if: github.event_name == 'pull_request' && github.event.pull_request.merged != true && steps.check_dir.outputs.execute
+        if: github.event_name == 'pull_request' && github.event.pull_request.merged != true && steps.check_dir.outputs.execute  == 'true'
         env:
           PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
         with:
@@ -157,14 +156,14 @@ jobs:
             })     
 
       - name: Terraform Apply
-        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true  && steps.check_dir.outputs.execute
+        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true  && steps.check_dir.outputs.execute  == 'true'
         id: apply
         run: |
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           terraform apply ${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
 
       - name: Post Apply Output to PR
-        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && steps.check_dir.outputs.execute
+        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && steps.check_dir.outputs.execute  == 'true'
         uses: actions/github-script@v5
         env:
           APPLY: "terraform\n${{ steps.apply.outputs.stdout }}"
