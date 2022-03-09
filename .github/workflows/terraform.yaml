@@ -49,7 +49,7 @@ jobs:
       - name: Check dir
         id: check_dir
         run: |
-          if [[ -d ${{ github.workspace }}/deployment/${{ inputs.DIR}} ]]
+          if [[ -d ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR}} ]]
           then
             echo "::set-output name=execute::true"
           else
@@ -65,6 +65,7 @@ jobs:
       - name: Copy Code
         if: contains(inputs.DEPLOY_SSH_KEY,'PRIVATE') == false && steps.check_dir.outputs.execute
         run: |
+          echo '${{ steps.check_dir.outputs.execute }}'
           git clone git@github.com:amboss-mededu/infra-template template
           cp -a -n ${{ github.workspace }}/template/${{ inputs.DIR }}/* ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}/
 
