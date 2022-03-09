@@ -73,6 +73,24 @@ jobs:
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           terraform init 
 
+      - name: AWS Auth for eks
+        if: contains(inputs.DIR,'eks_addons')
+        run: |
+          cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
+          echo ${{ env.TERRAFORM_CLI_PATH }}
+          if [[ ! $(terraform state list |grep kubernetes_config_map_v1.aws_auth) ]]
+          then
+            terraform apply \
+              -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
+              -var 'region=${{ inputs.REGION }}'  \
+              -target=data.aws_eks_cluster.eks
+            terraform import \ 
+              -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
+              -var 'region=${{ inputs.REGION }}' \
+              kubernetes_config_map_v1.aws_auth kube-system/aws-auth
+          fi
+        continue-on-error: true
+
       - name: Terraform Plan
         id: plan
         run: |
@@ -97,23 +115,6 @@ jobs:
             -var 'region=${{ inputs.REGION }}'  \
             -no-color -lock-timeout=300s \
             -out=${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
-        continue-on-error: true
-
-      - name: AWS Auth for eks
-        if: contains(inputs.DIR,'eks_addons')
-        run: |
-          cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
-          if [[ ! $(terraform state list |grep kubernetes_config_map_v1.aws_auth) ]]
-          then
-            terraform apply \
-              -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
-              -var 'region=${{ inputs.REGION }}'  \
-              -target=data.aws_eks_cluster.eks
-            terraform import \ 
-              -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
-              -var 'region=${{ inputs.REGION }}' \
-              kubernetes_config_map_v1.aws_auth kube-system/aws-auth
-          fi
         continue-on-error: true
 
       - name: Post Plan output to PR
