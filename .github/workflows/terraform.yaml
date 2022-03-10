@@ -52,7 +52,7 @@ jobs:
       - name: Check dir
         id: check_dir
         run: |
-          if [[ ${{ inputs.PATH }} ]]
+          if [[ '${{ inputs.PATH }}' != '' ]]
           then
             CODE_PATH=${{ inputs.PATH }}
           else
