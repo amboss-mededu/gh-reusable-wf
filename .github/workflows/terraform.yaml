@@ -8,6 +8,9 @@ on:
       REGION:
         required: true
         type: string
+      PATH:
+        required: false
+        type: string
     secrets:
       AWS_ACCOUNT_ID:
         required: true
@@ -49,7 +52,13 @@ jobs:
       - name: Check dir
         id: check_dir
         run: |
-          if [[ -d ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR}} ]]
+          if [[ ${{ inputs.PATH }} ]]
+          then
+            CODE_PATH=${{ inputs.PATH }}
+          else
+            CODE_PATH=${{ inputs.REGION }}
+          fi
+          if [[ -d ${{ github.workspace }}/deployment/${CODE_PATH}/${{ inputs.DIR}} ]]
           then
             echo "::set-output name=execute::true"
           else
