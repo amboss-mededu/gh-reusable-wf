@@ -57,19 +57,16 @@ jobs:
           fi
 
       - name: Add deploy key
-        if: steps.check_dir.outputs.execute  == 'true' 
+        if: steps.check_dir.outputs.execute  == 'true' && secrets.DEPLOY_SSH_KEY != ''
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
       
       - name: Copy Code
-        if: steps.check_dir.outputs.execute  == 'true' 
+        if: steps.check_dir.outputs.execute  == 'true' && secrets.DEPLOY_SSH_KEY != ''
         run: |
-          if [[ '${{ secrets.DEPLOY_SSH_KEY }}' ]]
-          then
-            git clone git@github.com:amboss-mededu/infra-template template
-            cp -a -n ${{ github.workspace }}/template/${{ inputs.DIR }}/* ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}/
-          fi
+          git clone git@github.com:amboss-mededu/infra-template template
+          cp -a -n ${{ github.workspace }}/template/${{ inputs.DIR }}/* ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}/
 
       - name: Configure AWS Credentials
         if: steps.check_dir.outputs.execute  == 'true'
