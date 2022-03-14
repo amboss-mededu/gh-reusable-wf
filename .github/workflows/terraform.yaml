@@ -75,13 +75,13 @@ jobs:
           cp -a -n ${{ github.workspace }}/template/${{ inputs.DIR }}/* ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}/
 
       - name: Code Security Scan on Push
-        if: github.event_name == 'push'
+        if: steps.check_dir.outputs.execute  == 'true' && github.event_name == 'push'
         uses: aquasecurity/tfsec-action@v1.0.0      
         with:
           working_directory: ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
 
       - name: Code Security Scan on PR
-        if: github.event_name != 'push'
+        if: steps.check_dir.outputs.execute  == 'true' && github.event_name != 'push'
         uses: aquasecurity/tfsec-pr-commenter-action@v1.0.2
         with:
           github_token: ${{ github.token }}
