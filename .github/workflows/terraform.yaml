@@ -85,6 +85,7 @@ jobs:
         uses: aquasecurity/tfsec-pr-commenter-action@v1.0.2
         with:
           github_token: ${{ github.token }}
+          working_directory: ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
 
       - name: Configure AWS Credentials
         if: steps.check_dir.outputs.execute  == 'true'
