@@ -99,7 +99,7 @@ jobs:
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}          
           if [[ ! $(terraform state list |grep kubernetes_config_map_v1.aws_auth) ]]
           then
-            terraform apply  -var-file=${{ github.workspace }}/deployment/account_info.tfvars -var 'region=${{ inputs.REGION }}' -target=data.aws_eks_cluster.eks
+            terraform apply -input=false -var-file=${{ github.workspace }}/deployment/account_info.tfvars -var 'region=${{ inputs.REGION }}' -target=data.aws_eks_cluster.eks
             terraform import -var-file=${{ github.workspace }}/deployment/account_info.tfvars -var 'region=${{ inputs.REGION }}' kubernetes_config_map_v1.aws_auth kube-system/aws-auth
           fi
         continue-on-error: true
@@ -110,6 +110,7 @@ jobs:
         run: |
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           terraform plan \
+            -input=false \
             -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
             -var 'region=${{ inputs.REGION }}'  \
             -no-color -lock-timeout=300s \
@@ -121,10 +122,12 @@ jobs:
         run: |
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           terraform refresh \
+            -input=false \
             -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
             -var 'region=${{ inputs.REGION }}'  \
             -no-color -lock-timeout=300s            
           terraform plan \
+            -input=false \
             -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
             -var 'region=${{ inputs.REGION }}'  \
             -no-color -lock-timeout=300s \
