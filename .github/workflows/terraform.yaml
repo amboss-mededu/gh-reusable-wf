@@ -80,12 +80,22 @@ jobs:
         with:
           directory: ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           framework: terraform 
+        continue-on-error: true
 
       - name: TFSec Scan
-        if: steps.check_dir.outputs.execute  == 'true'
+        if: steps.check_dir.outputs.execute  == 'true' && github.event_name == 'push'
         uses: aquasecurity/tfsec-action@v1.0.0      
         with:
           working_directory: ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
+          soft_fail: true
+
+      - name: TFSec Scan
+        if: steps.check_dir.outputs.execute  == 'true' && github.event_name != 'push'
+        uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
+        with:
+          github_token: ${{ github.token }}
+          working_directory: ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
+          soft_fail: true
 
       - name: Configure AWS Credentials
         if: steps.check_dir.outputs.execute  == 'true'
