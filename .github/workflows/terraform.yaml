@@ -95,7 +95,7 @@ jobs:
         with:
           github_token: ${{ github.token }}
           working_directory: ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
-          soft_fail: true
+          soft_fail_commenter: true
 
       - name: Configure AWS Credentials
         if: steps.check_dir.outputs.execute  == 'true'
