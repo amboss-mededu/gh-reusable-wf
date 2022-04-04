@@ -8,8 +8,11 @@ on:
       REGION:
         required: true
         type: string
+      TF_REGION:
+        type: string
+        required: true
     secrets:
-      AWS_ACCOUNT_ID:
+      IAM_ROLE:
         required: true
       DEPLOY_SSH_KEY:
         required: false
@@ -101,8 +104,8 @@ jobs:
         if: steps.check_dir.outputs.execute  == 'true'
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-region: eu-west-1
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/devops
+          aws-region: ${{ inputs.TF_REGION }}
+          role-to-assume: ${{ secrets.IAM_ROLE }}
           role-session-name: GithubActions-Terraform
 
       - name: Setup Terraform
