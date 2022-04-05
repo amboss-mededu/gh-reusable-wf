@@ -106,7 +106,7 @@ jobs:
       - name: Set WF Output
         id: wf_output
         run: |
-          if [[ ${{ steps.destroy.outcome }} == 'success' ]] || [[ ${{ steps.check_dir.outputs.execute }} == 'false' ]]
+          if [[ '${{ steps.destroy.outcome }}' == 'success' ]] || [[ '${{ steps.check_dir.outputs.execute }}' == 'false' ]]
           then
             echo "::set-output name=status::success"
           else
