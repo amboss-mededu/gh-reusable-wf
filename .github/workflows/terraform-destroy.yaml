@@ -18,7 +18,7 @@ on:
         required: false
     outputs:
       STATUS:
-        value: ${{ steps.wf_output.outputs.status }}
+        value: ${{ jobs.wf_output.outputs.status }}
 ## Token Permissions required
 #    permissions:
 #      id-token: write
