@@ -88,7 +88,7 @@ jobs:
           terraform init 
 
       - name: Terraform Destroy
-        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true  && steps.check_dir.outputs.execute  == 'true'
+        if: steps.check_dir.outputs.execute  == 'true'
         id: destroy
         run: |
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
