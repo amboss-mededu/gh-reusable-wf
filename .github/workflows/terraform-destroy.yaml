@@ -16,9 +16,6 @@ on:
         required: true
       DEPLOY_SSH_KEY:
         required: false
-    outputs:
-      STATUS:
-        value: ${{ jobs.wf_output.outputs.status }}
 ## Token Permissions required
 #    permissions:
 #      id-token: write
@@ -33,8 +30,6 @@ jobs:
     defaults:
       run:
         shell: bash
-    outputs:
-      STATUS: ${{ steps.wf_output.outputs.status }} 
     permissions:
       id-token: write
       contents: write
@@ -103,14 +98,3 @@ jobs:
             -var 'region=${{ inputs.REGION }}'  \
             -no-color -lock-timeout=300s \
             -auto-approve
-        continue-on-error: true
-
-      - name: Set WF Output
-        id: wf_output
-        run: |
-          if [[ '${{ steps.destroy.outcome }}' == 'success' ]] || [[ '${{ steps.destroy.outcome }}' == 'skipped' ]]
-          then
-            echo "::set-output name=status::success"
-          else
-            echo "::set-output name=status::failure"
-          fi
