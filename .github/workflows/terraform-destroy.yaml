@@ -17,10 +17,8 @@ on:
       DEPLOY_SSH_KEY:
         required: false
     outputs:
-      PLAN_OUTCOME:
-        value: ${{ jobs.terraform.outputs.PLAN_OUTCOME }}
-      APPLY_OUTCOME:
-        value: ${{ jobs.terraform.outputs.APPLY_OUTCOME }}
+      STATUS:
+        value: ${{ steps.wf_output.outputs.status }}
 ## Token Permissions required
 #    permissions:
 #      id-token: write
@@ -35,9 +33,6 @@ jobs:
     defaults:
       run:
         shell: bash
-    outputs:
-      PLAN_OUTCOME: ${{ steps.plan.outcome }}
-      APPLY_OUTCOME: ${{ steps.apply.outcome }}
     permissions:
       id-token: write
       contents: write
@@ -91,27 +86,29 @@ jobs:
 
       - name: Terraform Init
         if: steps.check_dir.outputs.execute  == 'true'
-        id: init
         run: |
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           terraform init 
 
-      - name: Terraform Plan
-        if: steps.check_dir.outputs.execute  == 'true'
-        id: plan
+      - name: Terraform Destroy
+        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true  && steps.check_dir.outputs.execute  == 'true'
+        id: destroy
         run: |
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
-          terraform plan -destroy \
+          terraform destroy \
             -input=false \
             -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
             -var 'region=${{ inputs.REGION }}'  \
             -no-color -lock-timeout=300s \
-            -out=${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
+            -auto-approve
         continue-on-error: true
 
-      - name: Terraform Apply
-        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true  && steps.check_dir.outputs.execute  == 'true'
-        id: apply
+      - name: Set WF Output
+        id: wf_output
         run: |
-          cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
-          terraform destroy ${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
+          if [[ ${{ steps.destroy.outcome }} == 'success' ]] || [[ ${{ steps.check_dir.outputs.execute }} == 'false' ]]
+          then
+            echo "::set-output name=status::success"
+          else
+            echo "::set-output name=status::failure"
+          fi
