@@ -182,14 +182,14 @@ jobs:
             })     
 
       - name: Terraform Apply
-        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true  && steps.check_dir.outputs.execute  == 'true'
+        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true  && steps.check_dir.outputs.execute  == 'true' && steps.plan.outcome == 'success'
         id: apply
         run: |
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           terraform apply ${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
 
       - name: Post Apply Output to PR
-        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && steps.check_dir.outputs.execute  == 'true'
+        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && steps.check_dir.outputs.execute  == 'true' && steps.plan.outcome == 'success'
         uses: actions/github-script@v5
         env:
           APPLY: "terraform\n${{ steps.apply.outputs.stdout }}"
