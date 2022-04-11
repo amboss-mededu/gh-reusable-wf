@@ -5,13 +5,17 @@ on:
       REPO_NAME:
         type: string
         required: true
+      RUNS_ON:
+        type: string
+        required: false
+        default: ubuntu-latest
     outputs:
       OPEN_PRS:
         value: ${{ jobs.open_prs.outputs.OPEN_PRS }}
 jobs:
   open_prs:
     name: Get Open PRs
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runs-on }}
     defaults:
       run:
         shell: bash
