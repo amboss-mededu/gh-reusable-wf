@@ -8,7 +8,7 @@ on:
       RUNS_ON:
         type: string
         required: false
-        default: ubuntu-latest
+        default: self-hosted
     outputs:
       OPEN_PRS:
         value: ${{ jobs.open_prs.outputs.OPEN_PRS }}
