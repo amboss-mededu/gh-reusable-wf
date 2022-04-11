@@ -21,12 +21,6 @@ on:
         value: ${{ jobs.terraform.outputs.PLAN_OUTCOME }}
       APPLY_OUTCOME:
         value: ${{ jobs.terraform.outputs.APPLY_OUTCOME }}
-## Token Permissions required
-#    permissions:
-#      id-token: write
-#      contents: write
-#      pull-requests: write
-#      packages: read
 
 jobs:
   terraform:
