@@ -86,14 +86,7 @@ jobs:
         continue-on-error: true
 
       - name: TFSec Scan
-        if: steps.check_dir.outputs.execute  == 'true' && github.event_name == 'push'
-        uses: aquasecurity/tfsec-action@v1.0.0      
-        with:
-          working_directory: ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
-          soft_fail: true
-
-      - name: TFSec Scan
-        if: steps.check_dir.outputs.execute  == 'true' && github.event_name != 'push'
+        if: steps.check_dir.outputs.execute  == 'true'
         uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
         with:
           github_token: ${{ github.token }}
