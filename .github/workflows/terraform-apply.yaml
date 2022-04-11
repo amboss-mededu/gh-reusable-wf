@@ -144,7 +144,7 @@ jobs:
         continue-on-error: true
 
       - name: Terraform Refresh
-        if: contains(steps.plan.outputs.stdout, 'has changed') && steps.check_dir.outputs.execute  == 'true'
+        if: contains(steps.plan.outputs.stdout, 'Objects have changed outside of Terraform') && steps.check_dir.outputs.execute  == 'true'
         run: |
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           terraform refresh \
