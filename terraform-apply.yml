@@ -13,10 +13,13 @@ inputs:
     description: AWS Region for State bucket and DynamoDB
     type: string
     required: true
-secrets:
   IAM_ROLE:
+    description: IAM Role to assume From github to aws
+    type: string
     required: true
   DEPLOY_SSH_KEY:
+    description: Deploy SSH KEy for template repo
+    type: string
     required: false
 outputs:
   PLAN_OUTCOME:
@@ -35,13 +38,13 @@ runs:
     - name: Check dir
       id: check_dir
       run: |
-        if [[ -d ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR}} ]] && [[ -f ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR}}/state.tf ]]
+        if [[ -d ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }} ]] && [[ -f ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}/state.tf ]]
         then
           echo "::set-output name=execute::true"
         else
           echo "::set-output name=execute::false"
         fi
-        if [[ '${{ secrets.DEPLOY_SSH_KEY }}' == '' ]]
+        if [[ '${{ inputs.DEPLOY_SSH_KEY }}' == '' ]]
         then
           echo "::set-output name=use_template::false"
         else
@@ -52,7 +55,7 @@ runs:
       if: steps.check_dir.outputs.execute  == 'true' && steps.check_dir.outputs.use_template == 'true'
       uses: webfactory/ssh-agent@v0.5.4
       with:
-        ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+        ssh-private-key: ${{ inputs.DEPLOY_SSH_KEY }}
     
     - name: Copy Code
       if: steps.check_dir.outputs.execute  == 'true' && steps.check_dir.outputs.use_template == 'true'
@@ -81,7 +84,7 @@ runs:
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-region: ${{ inputs.TF_REGION }}
-        role-to-assume: ${{ secrets.IAM_ROLE }}
+        role-to-assume: ${{ inputs.IAM_ROLE }}
         role-session-name: GithubActions-Terraform
 
     - name: Setup Terraform
@@ -142,7 +145,7 @@ runs:
       env:
         PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ inputs.GITHUB_TOKEN }}
         script: |
           const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
           #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
@@ -179,7 +182,7 @@ runs:
       env:
         APPLY: "terraform\n${{ steps.apply.outputs.stdout }}"
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ inputs.GITHUB_TOKEN }}
         script: |
           const output = `#### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
           #### Terraform Apply ${{ inputs.REGION }}/${{ inputs.DIR }}📖\`${{ steps.plan.outcome }}\`
