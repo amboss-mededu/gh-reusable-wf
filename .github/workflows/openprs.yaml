@@ -15,7 +15,7 @@ on:
 jobs:
   open_prs:
     name: Get Open PRs
-    runs-on: ${{ inputs.runs-on }}
+    runs-on: ${{ inputs.RUNS_ON }}
     defaults:
       run:
         shell: bash
