@@ -108,11 +108,13 @@ jobs:
         id: init
         run: |
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
+          export TF_IN_AUTOMATION=true
           terraform init 
 
       - name: AWS Auth for eks
         if: contains(inputs.DIR,'eks_addons') && steps.check_dir.outputs.execute  == 'true'
         run: |
+          export TF_IN_AUTOMATION=true
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}          
           if [[ ! $(terraform state list |grep kubernetes_config_map_v1.aws_auth) ]]
           then
@@ -125,6 +127,7 @@ jobs:
         if: steps.check_dir.outputs.execute  == 'true'
         id: plan
         run: |
+          export TF_IN_AUTOMATION=true
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           terraform plan \
             -input=false \
@@ -137,6 +140,7 @@ jobs:
       - name: Terraform Refresh
         if: contains(steps.plan.outputs.stdout, 'Objects have changed outside of Terraform') && steps.check_dir.outputs.execute  == 'true'
         run: |
+          export TF_IN_AUTOMATION=true
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           terraform refresh \
             -input=false \
@@ -185,6 +189,7 @@ jobs:
         if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true  && steps.check_dir.outputs.execute  == 'true' && steps.plan.outcome == 'success'
         id: apply
         run: |
+          export TF_IN_AUTOMATION=true
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           terraform apply ${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
 
