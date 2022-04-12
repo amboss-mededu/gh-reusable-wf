@@ -15,14 +15,12 @@ on:
         type: string
         required: false
         default: self-hosted
-      ADDITIONAL_ARGS:
-        type: string
-        required: false
-        default: ""
     secrets:
       IAM_ROLE:
         required: true
       DEPLOY_SSH_KEY:
+        required: false
+      ADDITIONAL_ARGS:
         required: false
     outputs:
       PLAN_OUTCOME:
@@ -138,7 +136,7 @@ jobs:
             -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
             -var 'region=${{ inputs.REGION }}'  \
             -no-color -lock-timeout=300s \
-            -out=${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output $ADDITIONAL_ARGS
+            -out=${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output ${{ secrets.ADDITIONAL_ARGS }}
         continue-on-error: true
 
       - name: Terraform Refresh
@@ -150,13 +148,13 @@ jobs:
             -input=false \
             -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
             -var 'region=${{ inputs.REGION }}'  \
-            -no-color -lock-timeout=300s $ADDITIONAL_ARGS            
+            -no-color -lock-timeout=300s ${{ secrets.ADDITIONAL_ARGS }}
           terraform plan \
             -input=false \
             -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
             -var 'region=${{ inputs.REGION }}'  \
             -no-color -lock-timeout=300s \
-            -out=${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output $ADDITIONAL_ARGS
+            -out=${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output ${{ secrets.ADDITIONAL_ARGS }}
         continue-on-error: true
 
       - name: Post Plan output to PR
