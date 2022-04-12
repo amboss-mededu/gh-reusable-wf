@@ -134,7 +134,7 @@ jobs:
           terraform plan \
             -input=false \
             -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
-            -var 'region=${{ inputs.REGION }}'  \
+            -var 'region=${{ inputs.REGION }}' \
             -no-color -lock-timeout=300s \
             -out=${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output ${{ secrets.ADDITIONAL_ARGS }}
         continue-on-error: true
