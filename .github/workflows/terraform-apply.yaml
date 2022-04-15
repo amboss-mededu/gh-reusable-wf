@@ -111,8 +111,8 @@ jobs:
         if: steps.check_dir.outputs.execute  == 'true'
         id: init
         run: |
+          rm results.sarif -f
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
-          rm results.sarif
           export TF_IN_AUTOMATION=true
           terraform init 
          
