@@ -114,14 +114,7 @@ jobs:
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           export TF_IN_AUTOMATION=true
           terraform init 
-
-      - name: Read value from Secrets Directly
-        uses: Firenza/secrets-to-env@v1.1.0
-        with:
-          secrets: ${{ toJSON(secrets) }}
-          secret_filter_regex: TF_VAR_*
-          env_var_name_lower_case_regex: (?<=TF_VAR_).*
-          
+         
       - name: AWS Auth for eks
         if: contains(inputs.DIR,'eks_addons') && steps.check_dir.outputs.execute  == 'true'
         run: |
