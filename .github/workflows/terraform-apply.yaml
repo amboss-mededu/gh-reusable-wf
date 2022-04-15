@@ -112,6 +112,7 @@ jobs:
         id: init
         run: |
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
+          rm results.sarif
           export TF_IN_AUTOMATION=true
           terraform init 
          
@@ -177,18 +178,6 @@ jobs:
 
             \`\`\`\n
             ${process.env.PLAN}
-            \`\`\`
-
-            </details>
-            <details><summary>Show Checkov</summary>
-
-            \`\`\`\n
-            fs.readFile('/Users/joe/test.txt', 'utf8' , (err, data) => {
-              if (err) {
-              console.error(err)
-              return }
-                console.log(data)
-              })
             \`\`\`
 
             </details>
