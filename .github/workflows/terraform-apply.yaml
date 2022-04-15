@@ -93,7 +93,6 @@ jobs:
           directory: ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           framework: terraform
           quiet: true
-          download_external_modules: true
         continue-on-error: true
 
       - name: Configure AWS Credentials
