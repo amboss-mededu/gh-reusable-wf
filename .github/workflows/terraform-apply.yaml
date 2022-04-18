@@ -74,11 +74,6 @@ jobs:
             echo "::set-output name=use_template::false"
           fi
 
-      - name: debug
-        run: |
-          ls -lR
-          echo "${{ tojson(steps.check_dir.outputs) }}"
-
       - name: Add deploy key
         if: steps.check_dir.outputs.execute  == 'true' && steps.check_dir.outputs.use_template == 'true'
         uses: webfactory/ssh-agent@v0.5.4
