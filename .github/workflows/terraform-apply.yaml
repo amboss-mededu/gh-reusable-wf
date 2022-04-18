@@ -75,7 +75,7 @@ jobs:
           fi
 
       - name: debug
-        run: echo "${{ steps.check_dir.outputs }}"
+        run: echo "${{ tojson(steps.check_dir.outputs) }}"
 
       - name: Add deploy key
         if: steps.check_dir.outputs.execute  == 'true' && steps.check_dir.outputs.use_template == 'true'
