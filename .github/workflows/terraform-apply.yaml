@@ -122,7 +122,7 @@ jobs:
         run: |
           rm results.sarif -f
           cd ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
-          STATE_FILENAME=$(${{ inputs.DIR }}/_/-)
+          STATE_FILENAME=$(sed -i s/_/-/g "${{ inputs.DIR }}")
           echo $STATE_FILENAME
           terraform init 
     # -backend-config=key="aws-${{ inputs.ACCOUNT_NAME }}/${{ inputs.REGION }}/${{ inputs.DIR }}.tfstate"
