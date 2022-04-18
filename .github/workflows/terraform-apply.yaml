@@ -123,8 +123,7 @@ jobs:
         run: |
           rm results.sarif -f
           cd ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
-          STATE_FILENAME=$(echo "${{ inputs.DIR }}" |sed s/_/-/g )
-          terraform init -backend-config=key="aws-${{ inputs.ACCOUNT_NAME }}/${{ inputs.REGION }}/${STATE_FILENAME}.tfstate"
+          terraform init -backend-config=key="aws-${{ inputs.ACCOUNT_NAME }}/${{ inputs.REGION }}/$(echo "${{ inputs.DIR }}" |sed s/_/-/g ).tfstate"
          
       - name: AWS Auth for eks
         if: contains(inputs.DIR,'eks_addons') && steps.check_dir.outputs.execute  == 'true'
