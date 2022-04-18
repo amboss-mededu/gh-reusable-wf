@@ -10,7 +10,7 @@ on:
         type: string
       TF_REGION:
         type: string
-        required: true
+        required: false
         default: eu-west-1
       RUNS_ON:
         type: string
