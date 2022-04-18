@@ -62,6 +62,7 @@ jobs:
         run: |
           echo "::set-output name=account_name::${{ inputs.ACCOUNT_NAME }}"
           KEY_LENGTH=$(expr length "${{ secrets.DEPLOY_SSH_KEY }}")
+          echo $KEY_LENGTH
           if [[ -d ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR}} ]]
           then
             echo "::set-output name=execute::true"
@@ -70,9 +71,9 @@ jobs:
           fi
           if [[ $KEY_LENGTH > 0 ]]
           then
-            echo "::set-output name=use_template::false"
-          else
             echo "::set-output name=use_template::true"
+          else
+            echo "::set-output name=use_template::false"
           fi
 
       - name: Add deploy key
