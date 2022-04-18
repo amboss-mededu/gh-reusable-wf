@@ -61,7 +61,7 @@ jobs:
         id: check_dir
         run: |
           echo "::set-output name=account_name::${{ inputs.ACCOUNT_NAME }}"
-          if [[ -d ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR}} ]]
+          if [[ -d ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }} ]]
           then
             echo "::set-output name=execute::true"
           else
@@ -75,7 +75,9 @@ jobs:
           fi
 
       - name: debug
-        run: echo "${{ tojson(steps.check_dir.outputs) }}"
+        run: |
+          ls -lR
+          echo "${{ tojson(steps.check_dir.outputs) }}"
 
       - name: Add deploy key
         if: steps.check_dir.outputs.execute  == 'true' && steps.check_dir.outputs.use_template == 'true'
