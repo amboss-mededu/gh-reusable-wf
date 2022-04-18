@@ -2,7 +2,7 @@ name: Terraform
 on:
   workflow_call:
     inputs:
-      DIR: 
+      DIR:
         required: true
         type: string
       REGION:
@@ -11,10 +11,14 @@ on:
       TF_REGION:
         type: string
         required: true
+        default: eu-west-1
       RUNS_ON:
         type: string
         required: false
         default: self-hosted
+      ACCOUNT_NAME:
+        type: string
+        required: true
     secrets:
       IAM_ROLE:
         required: true
@@ -27,17 +31,21 @@ on:
         value: ${{ jobs.terraform.outputs.PLAN_OUTCOME }}
       APPLY_OUTCOME:
         value: ${{ jobs.terraform.outputs.APPLY_OUTCOME }}
-
+      ACCOUNT_NAME:
+        value: ${{ jobs.terraform.outputs.ACCOUNT_NAME }}
 jobs:
   terraform:
     name: Terraform workflow
     runs-on: ${{ inputs.RUNS_ON }}
+    env:
+      TF_IN_AUTOMATION: true
     defaults:
       run:
         shell: bash
     outputs:
       PLAN_OUTCOME: ${{ steps.plan.outcome }}
       APPLY_OUTCOME: ${{ steps.apply.outcome }}
+      ACCOUNT_NAME: ${{ steps.check_dir.outputs.account_name }}
     permissions:
       id-token: write
       contents: write
@@ -64,6 +72,7 @@ jobs:
           else
             echo "::set-output name=use_template::true"
           fi
+            echo "::set-output name=account_name::${{ inputs.ACCOUNT_NAME }}"
 
       - name: Add deploy key
         if: steps.check_dir.outputs.execute  == 'true' && steps.check_dir.outputs.use_template == 'true'
@@ -82,7 +91,7 @@ jobs:
         uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
         with:
           github_token: ${{ github.token }}
-          working_directory: ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
+          working_directory: ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
           soft_fail_commenter: true
 
       - name: Checkov Scan
@@ -90,7 +99,7 @@ jobs:
         if: steps.check_dir.outputs.execute  == 'true' && (github.event_name == 'push' || github.event_name == 'pull_request' )
         uses: bridgecrewio/checkov-action@master
         with:
-          directory: ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
+          directory: ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
           framework: terraform
           quiet: true
         continue-on-error: true
@@ -112,15 +121,16 @@ jobs:
         id: init
         run: |
           rm results.sarif -f
-          cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
-          export TF_IN_AUTOMATION=true
+          cd ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
+          STATE_FILENAME=$(${{ inputs.DIR }}/_/-)
+          echo $STATE_FILENAME
           terraform init 
+    # -backend-config=key="aws-${{ inputs.ACCOUNT_NAME }}/${{ inputs.REGION }}/${{ inputs.DIR }}.tfstate"
          
       - name: AWS Auth for eks
         if: contains(inputs.DIR,'eks_addons') && steps.check_dir.outputs.execute  == 'true'
         run: |
-          export TF_IN_AUTOMATION=true
-          cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}          
+          cd ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}          
           if [[ ! $(terraform state list |grep kubernetes_config_map_v1.aws_auth) ]]
           then
             terraform apply -input=false -var-file=${{ github.workspace }}/deployment/account_info.tfvars -var 'region=${{ inputs.REGION }}' -target=data.aws_eks_cluster.eks
@@ -132,8 +142,7 @@ jobs:
         if: steps.check_dir.outputs.execute  == 'true'
         id: plan
         run: |
-          export TF_IN_AUTOMATION=true
-          cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
+          cd ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
           terraform plan \
             -input=false \
             -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
@@ -146,7 +155,7 @@ jobs:
         if: contains(steps.plan.outputs.stdout, 'Objects have changed outside of Terraform') && steps.check_dir.outputs.execute  == 'true'
         run: |
           export TF_IN_AUTOMATION=true
-          cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
+          cd ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
           terraform refresh \
             -input=false \
             -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
@@ -155,7 +164,7 @@ jobs:
           terraform plan \
             -input=false \
             -var-file=${{ github.workspace }}/deployment/account_info.tfvars \
-            -var 'region=${{ inputs.REGION }}'  \
+            -var 'region=${{ inputs.REGION }}' \
             -no-color -lock-timeout=300s \
             -out=${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output ${{ secrets.ADDITIONAL_ARGS }}
         continue-on-error: true
@@ -194,8 +203,7 @@ jobs:
         if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true  && steps.check_dir.outputs.execute  == 'true' && steps.plan.outcome == 'success'
         id: apply
         run: |
-          export TF_IN_AUTOMATION=true
-          cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
+          cd ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
           terraform apply ${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output
 
       - name: Post Apply Output to PR
