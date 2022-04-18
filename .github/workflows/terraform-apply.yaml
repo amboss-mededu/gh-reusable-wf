@@ -60,19 +60,19 @@ jobs:
       - name: Check dir
         id: check_dir
         run: |
+          echo "::set-output name=account_name::${{ inputs.ACCOUNT_NAME }}"
           if [[ -d ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR}} ]]
           then
             echo "::set-output name=execute::true"
           else
             echo "::set-output name=execute::false"
           fi
-          if [[ '${{ secrets.DEPLOY_SSH_KEY }}' == '' ]]
+          if [[ ${#'${{ secrets.DEPLOY_SSH_KEY }}'} > 0 ]]
           then
             echo "::set-output name=use_template::false"
           else
             echo "::set-output name=use_template::true"
           fi
-            echo "::set-output name=account_name::${{ inputs.ACCOUNT_NAME }}"
 
       - name: Add deploy key
         if: steps.check_dir.outputs.execute  == 'true' && steps.check_dir.outputs.use_template == 'true'
