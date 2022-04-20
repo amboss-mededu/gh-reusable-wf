@@ -133,6 +133,7 @@ jobs:
           then
             terraform apply -input=false -var-file=${{ github.workspace }}/deployment/account_info.tfvars -var 'region=${{ inputs.REGION }}' -target=data.aws_eks_cluster.eks
             terraform import -var-file=${{ github.workspace }}/deployment/account_info.tfvars -var 'region=${{ inputs.REGION }}' kubernetes_config_map_v1.aws_auth kube-system/aws-auth
+            terraform import -var-file=${{ github.workspace }}/deployment/account_info.tfvars -var 'region=${{ inputs.REGION }}' kubernetes_storage_class_v1.gp2 gp2
           fi
         continue-on-error: true
 
