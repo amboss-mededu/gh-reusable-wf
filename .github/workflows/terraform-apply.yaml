@@ -149,6 +149,17 @@ jobs:
             -out=${{ github.workspace }}/terraform-plan-${{ github.run_id }}.output ${{ secrets.ADDITIONAL_ARGS }}
         continue-on-error: true
 
+      - name: Terraform Apply Status
+        if: steps.check_dir.outputs.execute  == 'true'
+        id: applied
+        run: |
+          if [[ "${{ contains(steps.plan.outputs.stdout, 'No Changes' }}" ]]
+          then
+            echo "::set-output name=applied::true"
+          else            
+            echo "::set-output name=applied::false"
+          fi
+
       - name: Terraform Refresh
         if: contains(steps.plan.outputs.stdout, 'Objects have changed outside of Terraform') && steps.check_dir.outputs.execute  == 'true'
         run: |

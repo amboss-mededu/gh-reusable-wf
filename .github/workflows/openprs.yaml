@@ -38,4 +38,5 @@ jobs:
         id: open_pr
         run: |
           COUNT=$(python3 -c 'import json; pr=json.loads(${{ tojson(steps.get_open_prs.outputs.data) }});print(len(pr))')
+          echo $COUNT
           echo "::set-output name=PR_COUNT::$COUNT"
