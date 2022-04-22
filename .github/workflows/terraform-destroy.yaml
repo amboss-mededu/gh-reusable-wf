@@ -15,6 +15,9 @@ on:
         type: string
         required: false
         default: self-hosted
+      ACCOUNT_NAME:
+        type: string
+        required: true
     secrets:
       IAM_ROLE:
         required: true
@@ -26,6 +29,9 @@ on:
 #      contents: write
 #      pull-requests: write
 #      packages: read
+    outputs:
+      ACCOUNT_NAME:
+        value: ${{ jobs.terraform.outputs.ACCOUNT_NAME }}
 
 jobs:
   terraform:
@@ -48,6 +54,7 @@ jobs:
       - name: Check dir
         id: check_dir
         run: |
+          echo "::set-output name=account_name::${{ inputs.ACCOUNT_NAME }}"
           if [[ -d ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR}} ]] && [[ -f ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR}}/state.tf ]]
           then
             echo "::set-output name=execute::true"
@@ -89,7 +96,7 @@ jobs:
         if: steps.check_dir.outputs.execute  == 'true'
         run: |
           cd ${{ github.workspace }}/deployment/${{ inputs.region }}/${{ inputs.DIR }}
-          terraform init 
+          terraform init -backend-config=key="aws-${{ inputs.ACCOUNT_NAME }}/${{ inputs.REGION }}/$(echo "${{ inputs.DIR }}" |sed s/_/-/g ).tfstate"
 
       - name: Terraform Destroy
         if: steps.check_dir.outputs.execute  == 'true'
