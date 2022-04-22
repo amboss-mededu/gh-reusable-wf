@@ -55,7 +55,7 @@ jobs:
         id: check_dir
         run: |
           echo "::set-output name=account_name::${{ inputs.ACCOUNT_NAME }}"
-          if [[ -d ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR}} ]] && [[ -f ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR}}/state.tf ]]
+          if [[ -d ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR}} ]] && [[ -f ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}/state.tf ]]
           then
             echo "::set-output name=execute::true"
           else
