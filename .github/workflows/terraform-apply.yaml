@@ -106,7 +106,7 @@ jobs:
         continue-on-error: true
 
       - name: Configure AWS Credentials
-        if: steps.check_dir.outputs.execute  == 'true'
+        if: steps.check_dir.outputs.execute  == 'true' && inputs.RUNS_ON != 'self_hosted'
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: ${{ inputs.TF_REGION }}
