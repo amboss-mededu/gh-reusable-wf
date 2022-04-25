@@ -73,10 +73,6 @@ jobs:
           else
             echo "::set-output name=use_template::false"
           fi
-          if [[ '${{ inputs.RUNS_ON }}' != 'self-hosted' ]]
-          then
-            echo "::set-output name=assume_role::true"
-          fi
 
       - name: Add deploy key
         if: steps.check_conditions.outputs.execute  == 'true' && steps.check_conditions.outputs.use_template == 'true'
@@ -110,7 +106,8 @@ jobs:
         continue-on-error: true
 
       - name: Configure AWS Credentials
-        if: steps.check_conditions.outputs.execute  == 'true' && steps.check_conditions.outputs.assume_role == 'true'
+        if: steps.check_conditions.outputs.execute  == 'true' && inputs.RUNS_ON != 'self-hosted'
+
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: ${{ inputs.TF_REGION }}
