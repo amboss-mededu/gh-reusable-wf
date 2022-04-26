@@ -85,7 +85,6 @@ jobs:
       - name: Copy Code
         if: steps.check_conditions.outputs.execute  == 'true' && steps.check_conditions.outputs.use_template == 'true'
         run: |
-          pwd
           git clone git@github.com:amboss-mededu/infra-template template
           cp -a -n template/${{ inputs.DIR }} deployment/${{ inputs.REGION }}/
           cp -a -n template/state.tf deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
