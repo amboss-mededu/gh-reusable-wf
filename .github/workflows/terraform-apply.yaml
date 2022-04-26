@@ -37,6 +37,7 @@ jobs:
   terraform:
     name: Terraform workflow
     runs-on: ${{ inputs.RUNS_ON }}
+    container: public.ecr.aws/docker/library/node
     env:
       TF_IN_AUTOMATION: true
     defaults:
