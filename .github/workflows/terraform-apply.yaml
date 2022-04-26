@@ -37,7 +37,6 @@ jobs:
   terraform:
     name: Terraform workflow
     runs-on: ${{ inputs.RUNS_ON }}
-    container: node:slim
     env:
       TF_IN_AUTOMATION: true
     defaults:
