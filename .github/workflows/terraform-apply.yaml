@@ -101,7 +101,7 @@ jobs:
         uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
         with:
           github_token: ${{ github.token }}
-          working_directory: $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
+          working_directory: deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
           soft_fail_commenter: true
 
       - name: Checkov Scan
@@ -109,7 +109,7 @@ jobs:
         if: steps.check_conditions.outputs.execute  == 'true' && (github.event_name == 'push' || github.event_name == 'pull_request' )
         uses: bridgecrewio/checkov-action@master
         with:
-          directory: $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
+          directory: deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
           framework: terraform
           quiet: true
         continue-on-error: true
