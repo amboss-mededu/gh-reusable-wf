@@ -62,7 +62,7 @@ jobs:
         id: check_conditions
         run: |
           echo "::set-output name=account_name::${{ inputs.ACCOUNT_NAME }}"
-          if [[ -d ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }} ]]
+          if [[ -d deployment/${{ inputs.REGION }}/${{ inputs.DIR }} ]]
           then
             echo "::set-output name=execute::true"
           else
@@ -74,9 +74,6 @@ jobs:
           else
             echo "::set-output name=use_template::false"
           fi
-
-      - name: debug
-        run: echo '${{ tojson(github) }}'
         
       - name: Add deploy key
         if: steps.check_conditions.outputs.execute  == 'true' && steps.check_conditions.outputs.use_template == 'true'
