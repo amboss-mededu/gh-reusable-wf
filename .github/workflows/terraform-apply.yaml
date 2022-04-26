@@ -70,7 +70,7 @@ jobs:
         run: |
           env
           echo "::set-output name=account_name::${{ inputs.ACCOUNT_NAME }}"
-          if [[ -d ${{ env.GITHUB_WORKSPACE }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }} ]]
+          if [[ -d $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }} ]]
           then
             echo "::set-output name=execute::true"
           else
