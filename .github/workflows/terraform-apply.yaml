@@ -62,7 +62,6 @@ jobs:
         id: check_conditions
         run: |
           echo "::set-output name=account_name::${{ inputs.ACCOUNT_NAME }}"
-          ls -lR
           if [[ -d ${{ github.workspace }}/deployment/${{ inputs.REGION }}/${{ inputs.DIR }} ]]
           then
             echo "::set-output name=execute::true"
@@ -76,6 +75,9 @@ jobs:
             echo "::set-output name=use_template::false"
           fi
 
+      - name: debug
+        run: echo '${{ tojson(steps.check_conditions.outputs) }}'
+        
       - name: Add deploy key
         if: steps.check_conditions.outputs.execute  == 'true' && steps.check_conditions.outputs.use_template == 'true'
         uses: webfactory/ssh-agent@v0.5.4
