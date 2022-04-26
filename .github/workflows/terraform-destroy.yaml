@@ -38,7 +38,7 @@ jobs:
     name: Terraform workflow
     runs-on: ${{ inputs.RUNS_ON }}
     container: 
-      image: public.ecr.aws/docker/library/node
+      image: iaacautomation/deploy:v1.5.0
       env:
         AWS_WEB_IDENTITY_TOKEN_FILE: /var/run/secrets/eks.amazonaws.com/serviceaccount/token
         AWS_ROLE_ARN: ${{ secrets.IAM_ROLE }}
