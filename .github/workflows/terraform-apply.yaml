@@ -35,7 +35,7 @@ on:
         value: ${{ jobs.terraform.outputs.ACCOUNT_NAME }}
 jobs:
   terraform:
-    name: Terraform workflow
+    name: ${{ inputs.DIR }}
     runs-on: ${{ inputs.RUNS_ON }}
     container: 
       image: iaacautomation/deploy:v1.5.0
