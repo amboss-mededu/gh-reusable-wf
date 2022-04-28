@@ -114,9 +114,6 @@ jobs:
           quiet: true
         continue-on-error: true
 
-      - name: Install aws-cli
-        uses: chrislennon/action-aws-cli@v1.1
-
       - name: Configure AWS Credentials
         if: steps.check_conditions.outputs.execute  == 'true' && inputs.RUNS_ON != 'self-hosted'
         uses: aws-actions/configure-aws-credentials@v1
