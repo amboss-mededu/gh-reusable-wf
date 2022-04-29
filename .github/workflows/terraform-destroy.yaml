@@ -35,7 +35,7 @@ on:
 
 jobs:
   terraform:
-    name: Terraform workflow
+    name: Terraform destroy workflow
     runs-on: ${{ inputs.RUNS_ON }}
     container: 
       image: iaacautomation/deploy:v1.5.0
