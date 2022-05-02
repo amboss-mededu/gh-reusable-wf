@@ -215,6 +215,7 @@ jobs:
           echo '${{ steps.check_conditions.outputs.execute }}'
           echo '${{ steps.plan.outcome }}'
           echo "${{ contains(steps.plan.outputs.stdout, 'No changes') }}"
+          echo "${{ github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && steps.check_conditions.outputs.execute && steps.plan.outcome == 'success' && ! contains(steps.plan.outputs.stdout, 'No changes') }}"
           
       - name: Terraform Apply
         if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && steps.check_conditions.outputs.execute && steps.plan.outcome == 'success' && ${{ ! contains(steps.plan.outputs.stdout, 'No changes') }}
