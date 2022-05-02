@@ -163,12 +163,7 @@ jobs:
         if: steps.check_conditions.outputs.execute  == 'true'
         id: apply_status
         run: |
-          if [[ "${{ contains(steps.plan.outputs.stdout, 'No Changes') }}" ]]
-          then
-            echo "::set-output name=applied::true"
-          else            
-            echo "::set-output name=applied::false"
-          fi
+          echo "::set-output name=applied::${{ contains(steps.plan.outputs.stdout, 'No changes') }}"
 
       - name: Check Variables
         run: |
