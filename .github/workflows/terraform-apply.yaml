@@ -170,6 +170,9 @@ jobs:
             echo "::set-output name=applied::false"
           fi
 
+      - name: Check Variables
+        run: echo '${{ tojson(steps.outputs.apply_status) }}'
+
       - name: Terraform Refresh
         if: contains(steps.plan.outputs.stdout, 'Objects have changed outside of Terraform') && steps.check_conditions.outputs.execute  == 'true' && steps.apply_status.outputs.applied == 'false'
         run: |
