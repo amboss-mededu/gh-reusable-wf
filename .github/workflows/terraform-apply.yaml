@@ -167,7 +167,6 @@ jobs:
 
       - name: Check Variables
         run: |
-          echo '${{ tojson(steps.plan.outputs) }}'
           echo '${{ tojson(steps.apply_status.outputs) }}'
 
       - name: Terraform Refresh
