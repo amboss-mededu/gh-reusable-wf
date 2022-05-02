@@ -207,14 +207,14 @@ jobs:
             })     
 
       - name: Terraform Apply
-        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && steps.check_conditions.outputs.execute  == 'true' && steps.plan.outcome == 'success' && contains(steps.plan.outputs.stdout, 'No changes') == 'false'
+        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && steps.check_conditions.outputs.execute  == 'true' && steps.plan.outcome == 'success' &&  && ${{ ! contains(steps.plan.outputs.stdout, 'No changes') }}
         id: apply
         run: |
           cd $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
           terraform apply $GITHUB_WORKSPACE/terraform-plan-${{ github.run_id }}.output
 
       - name: Post Apply Output to PR
-        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && steps.check_conditions.outputs.execute  == 'true' && steps.plan.outcome == 'success' && contains(steps.plan.outputs.stdout, 'No changes') == 'false'
+        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && steps.check_conditions.outputs.execute  == 'true' && steps.plan.outcome == 'success' &&  && ${{ ! contains(steps.plan.outputs.stdout, 'No changes') }}
         uses: actions/github-script@v5
         env:
           APPLY: "terraform\n${{ steps.apply.outputs.stdout }}"
