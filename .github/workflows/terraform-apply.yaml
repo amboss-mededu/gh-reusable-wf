@@ -198,7 +198,8 @@ jobs:
 
             </details>
 
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*, 
+            *Pusher: @${{ github.actor }}*
+            *Action: Plan*
             *Working Directory: \`${{ inputs.REGION }}/${{ inputs.DIR }}\`*`;
 
             github.rest.issues.createComment({
@@ -226,7 +227,7 @@ jobs:
             const output = `#### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
             #### Terraform Apply ${{ inputs.REGION }}/${{ inputs.DIR }}📖\`${{ steps.plan.outcome }}\`
 
-            <details><summary>Show Apply</summary>
+            <details><summary>Apply Output</summary>
 
             \`\`\`\n
             ${process.env.APPLY}
@@ -234,7 +235,8 @@ jobs:
 
             </details>
 
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*, 
+            *Pusher: @${{ github.actor }}*
+            *Action: Apply*
             *Working Directory: \`${{ inputs.REGION }}/${{ inputs.DIR }}\`*`;
 
             github.rest.issues.createComment({
