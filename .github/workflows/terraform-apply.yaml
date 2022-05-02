@@ -159,9 +159,6 @@ jobs:
             -out=$GITHUB_WORKSPACE/terraform-plan-${{ github.run_id }}.output ${{ secrets.ADDITIONAL_ARGS }}
         continue-on-error: true
 
-      - name: debug
-        run: "${{ contains(steps.plan.outputs.stdout, 'No changes') }}"
-
       - name: Terraform Refresh
         if: contains(steps.plan.outputs.stdout, 'Objects have changed outside of Terraform') && steps.check_conditions.outputs.execute  == 'true' && contains(steps.plan.outputs.stdout, 'No changes') == 'false'
         run: |
