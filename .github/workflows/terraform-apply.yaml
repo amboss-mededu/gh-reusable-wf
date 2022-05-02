@@ -179,7 +179,7 @@ jobs:
 
       - name: Post Plan output to PR
         uses: actions/github-script@v5
-        if: github.event_name == 'pull_request' && github.event.pull_request.merged != true && steps.check_conditions.outputs.execute && ${{ ! contains(steps.plan.outputs.stdout, 'No changes') }}
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.merged != true && steps.check_conditions.outputs.execute && ! contains(steps.plan.outputs.stdout, 'No changes') }}
         env:
           PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
         with:
@@ -207,25 +207,16 @@ jobs:
               repo: context.repo.repo,
               body: output
             })     
-
-      - name: Debug conditions
-        run: |
-          echo '${{ github.event_name }}'
-          echo '${{ github.event.pull_request.merged }}'
-          echo '${{ steps.check_conditions.outputs.execute }}'
-          echo '${{ steps.plan.outcome }}'
-          echo "${{ contains(steps.plan.outputs.stdout, 'No changes') }}"
-          echo "${{ github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && steps.check_conditions.outputs.execute && steps.plan.outcome == 'success' && ! contains(steps.plan.outputs.stdout, 'No changes') }}"
           
       - name: Terraform Apply
-        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && steps.check_conditions.outputs.execute && steps.plan.outcome == 'success' && ${{ ! contains(steps.plan.outputs.stdout, 'No changes') }}
+        if: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && steps.check_conditions.outputs.execute && steps.plan.outcome == 'success' && ! contains(steps.plan.outputs.stdout, 'No changes') }}
         id: apply
         run: |
           cd $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
           terraform apply $GITHUB_WORKSPACE/terraform-plan-${{ github.run_id }}.output
 
       - name: Post Apply Output to PR
-        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && steps.check_conditions.outputs.execute && steps.plan.outcome == 'success' && ${{ ! contains(steps.plan.outputs.stdout, 'No changes') }}
+        if: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && steps.check_conditions.outputs.execute && steps.plan.outcome == 'success' && ! contains(steps.plan.outputs.stdout, 'No changes') }}
         uses: actions/github-script@v5
         env:
           APPLY: "terraform\n${{ steps.apply.outputs.stdout }}"
