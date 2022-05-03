@@ -68,8 +68,12 @@ jobs:
       - name: Check Conditions
         id: check_conditions
         run: |
-          env
           echo "::set-output name=account_name::${{ inputs.ACCOUNT_NAME }}"
+          if [[ -d '$GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/eks' ]]
+          then
+            mkdir -p $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/eks_services
+            mkdir -p $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/eks_addons
+          fi
           if [[ -d $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }} ]]
           then
             echo "::set-output name=execute::true"
