@@ -91,7 +91,7 @@ jobs:
           cp -a -n $GITHUB_WORKSPACE/template/${{ inputs.DIR }} $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/
 
       - name: Configure AWS Credentials
-        if: steps.check_conditions.outputs.execute  == 'true'
+        if: steps.check_conditions.outputs.execute  == 'true' && inputs.RUNS_ON != 'self-hosted'
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: ${{ inputs.TF_REGION }}
