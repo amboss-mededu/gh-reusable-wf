@@ -62,7 +62,7 @@ jobs:
           path: deployment
 
       - name: Check dir
-        id: check_dir
+        id: check_conditions
         run: |
           echo "::set-output name=account_name::${{ inputs.ACCOUNT_NAME }}"
           if [[ -d $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR}} ]] && [[ -f $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}/state.tf ]]
@@ -79,19 +79,19 @@ jobs:
           fi
 
       - name: Add deploy key
-        if: steps.check_dir.outputs.execute  == 'true' && steps.check_dir.outputs.use_template == 'true'
+        if: steps.check_conditions.outputs.execute  == 'true' && steps.check_conditions.outputs.use_template == 'true'
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
       
       - name: Copy Code
-        if: steps.check_dir.outputs.execute  == 'true' && steps.check_dir.outputs.use_template == 'true'
+        if: steps.check_conditions.outputs.execute  == 'true' && steps.check_conditions.outputs.use_template == 'true'
         run: |
           git clone git@github.com:amboss-mededu/infra-template template
           cp -a -n $GITHUB_WORKSPACE/template/${{ inputs.DIR }} $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/
 
       - name: Configure AWS Credentials
-        if: steps.check_dir.outputs.execute  == 'true'
+        if: steps.check_conditions.outputs.execute  == 'true'
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: ${{ inputs.TF_REGION }}
@@ -99,17 +99,17 @@ jobs:
           role-session-name: GithubActions-Terraform
 
       - name: Setup Terraform
-        if: steps.check_dir.outputs.execute  == 'true'
+        if: steps.check_conditions.outputs.execute  == 'true'
         uses: hashicorp/setup-terraform@v1
 
       - name: Terraform Init
-        if: steps.check_dir.outputs.execute  == 'true'
+        if: steps.check_conditions.outputs.execute  == 'true'
         run: |
           cd $GITHUB_WORKSPACE/deployment/${{ inputs.region }}/${{ inputs.DIR }}
           terraform init -backend-config=key="aws-${{ inputs.ACCOUNT_NAME }}/${{ inputs.REGION }}/$(echo "${{ inputs.DIR }}" |sed s/_/-/g ).tfstate"
 
       - name: Terraform Destroy
-        if: steps.check_dir.outputs.execute  == 'true'
+        if: steps.check_conditions.outputs.execute  == 'true'
         id: destroy
         run: |
           cd $GITHUB_WORKSPACE/deployment/${{ inputs.region }}/${{ inputs.DIR }}
