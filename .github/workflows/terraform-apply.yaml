@@ -138,17 +138,6 @@ jobs:
           cd $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
           terraform init -backend-config=key="aws-${{ inputs.ACCOUNT_NAME }}/${{ inputs.REGION }}/$(echo "${{ inputs.DIR }}" |sed s/_/-/g ).tfstate"
          
-      - name: AWS GP2
-        if: contains(inputs.DIR,'eks_addons') && steps.check_conditions.outputs.execute  == 'true'
-        run: |
-          cd $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
-          if [[ ! $(terraform state list |grep kubernetes_storage_class_v1.gp2) ]]
-          then
-            terraform apply -input=false -var-file=$GITHUB_WORKSPACE/deployment/account_info.tfvars -var 'region=${{ inputs.REGION }}' -target=data.aws_eks_cluster.eks
-            terraform import -var-file=$GITHUB_WORKSPACE/deployment/account_info.tfvars -var 'region=${{ inputs.REGION }}' kubernetes_storage_class_v1.gp2 gp2
-          fi
-        continue-on-error: true
-
       - name: Terraform Plan
         if: steps.check_conditions.outputs.execute  == 'true'
         id: plan
