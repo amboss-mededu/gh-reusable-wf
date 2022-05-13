@@ -66,7 +66,7 @@ jobs:
         id: check_conditions
         run: |
           echo "::set-output name=account_name::${{ inputs.ACCOUNT_NAME }}"
-          if [[ -d $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR}} ]] && [[ -f $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}/state.tf ]]
+          if [[ -d $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR}} ]]
           then
             echo "::set-output name=execute::true"
           else
@@ -90,6 +90,7 @@ jobs:
         run: |
           git clone git@github.com:amboss-mededu/infra-template template
           cp -a -n $GITHUB_WORKSPACE/template/${{ inputs.DIR }} $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/
+          cp -a -n $GITHUB_WORKSPACE/template/state.tf $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
 
       - name: Configure AWS Credentials
         if: steps.check_conditions.outputs.execute  == 'true' && inputs.RUNS_ON != 'self-hosted'
