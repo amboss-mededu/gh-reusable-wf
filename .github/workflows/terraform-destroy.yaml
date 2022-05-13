@@ -62,23 +62,28 @@ jobs:
         with:
           path: deployment
 
-      - name: Check dir
+      - name: Check Conditions
         id: check_conditions
         run: |
           echo "::set-output name=account_name::${{ inputs.ACCOUNT_NAME }}"
-          if [[ -d $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR}} ]]
+          if [[ -d '$GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/eks' ]]
+          then
+            mkdir -p $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/eks_services
+            mkdir -p $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/eks_addons
+          fi
+          if [[ -d $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }} ]]
           then
             echo "::set-output name=execute::true"
           else
             echo "::set-output name=execute::false"
           fi
-          if [[ '${{ secrets.DEPLOY_SSH_KEY }}' == '' ]]
+          if [[ $(expr length "${{ secrets.DEPLOY_SSH_KEY }}") > 0 ]]
           then
-            echo "::set-output name=use_template::false"
-          else
             echo "::set-output name=use_template::true"
+          else
+            echo "::set-output name=use_template::false"
           fi
-
+        
       - name: Add deploy key
         if: steps.check_conditions.outputs.execute  == 'true' && steps.check_conditions.outputs.use_template == 'true'
         uses: webfactory/ssh-agent@v0.5.4
