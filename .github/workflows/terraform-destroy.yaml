@@ -24,12 +24,6 @@ on:
         required: true
       DEPLOY_SSH_KEY:
         required: false
-## Token Permissions required
-#    permissions:
-#      id-token: write
-#      contents: write
-#      pull-requests: write
-#      packages: read
     outputs:
       ACCOUNT_NAME:
         value: ${{ jobs.terraform.outputs.ACCOUNT_NAME }}
