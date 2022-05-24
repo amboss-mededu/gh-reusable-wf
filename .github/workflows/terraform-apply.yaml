@@ -100,14 +100,14 @@ jobs:
           cp -a -n $GITHUB_WORKSPACE/template/${{ inputs.DIR }} $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/
           cp -a -n $GITHUB_WORKSPACE/template/state.tf $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
 
-      - name: TFSec Scan
-        if: steps.check_conditions.outputs.execute  == 'true' && ( github.event_name == 'push' || github.event_name == 'pull_request' )
-        uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
-        with:
-          github_token: ${{ github.token }}
-          working_directory: deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
-          soft_fail_commenter: true
-        continue-on-error: true
+#      - name: TFSec Scan
+#        if: steps.check_conditions.outputs.execute  == 'true' && ( github.event_name == 'push' || github.event_name == 'pull_request' )
+#        uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
+#        with:
+#          github_token: ${{ github.token }}
+#          working_directory: deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
+#          soft_fail_commenter: true
+#        continue-on-error: true
 
 #      - name: Checkov Scan
 #        id: checkov
