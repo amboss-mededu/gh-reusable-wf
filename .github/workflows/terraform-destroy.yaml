@@ -80,7 +80,13 @@ jobs:
           else
             echo "::set-output name=use_template::false"
           fi
+          ls $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }} -l
         
+      - name: debug
+        run: |
+         echo '${{ tojson(steps.check_conditions) }}'
+         echo '${{ tojson(inputs) }}'
+
       - name: Add deploy key
         if: steps.check_conditions.outputs.execute  == 'true' && steps.check_conditions.outputs.use_template == 'true'
         uses: webfactory/ssh-agent@v0.5.4
