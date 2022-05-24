@@ -69,7 +69,7 @@ jobs:
         id: check_conditions
         run: |
           echo "::set-output name=account_name::${{ inputs.ACCOUNT_NAME }}"
-          if [[ -d '$GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/eks' ]]
+          if [[ -d $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/eks ]]
           then
             mkdir -p $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/eks_services
             mkdir -p $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/eks_addons
