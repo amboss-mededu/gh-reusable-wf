@@ -28,6 +28,7 @@ on:
       ACCOUNT_NAME:
         value: ${{ jobs.terraform.outputs.ACCOUNT_NAME }}
 
+
 jobs:
   terraform:
     name: Terraform destroy workflow
@@ -81,8 +82,10 @@ jobs:
           fi
         
       - name: debug
-        run: echo '${{ tojson(steps.check_conditions) }}'
-        
+        run: |
+         echo '${{ tojson(steps.check_conditions) }}'
+         echo '${{ tojson(inputs) }}'
+
       - name: Add deploy key
         if: steps.check_conditions.outputs.execute  == 'true' && steps.check_conditions.outputs.use_template == 'true'
         uses: webfactory/ssh-agent@v0.5.4
