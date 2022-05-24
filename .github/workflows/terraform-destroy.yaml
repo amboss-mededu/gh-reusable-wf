@@ -62,7 +62,7 @@ jobs:
         id: check_conditions
         run: |
           echo "::set-output name=account_name::${{ inputs.ACCOUNT_NAME }}"
-          if [[ -d '$GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/eks' ]]
+          if [[ -d $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/eks ]]
           then
             mkdir -p $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/eks_services
             mkdir -p $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/eks_addons
@@ -81,11 +81,6 @@ jobs:
             echo "::set-output name=use_template::false"
           fi
         
-      - name: debug
-        run: |
-         echo '${{ tojson(steps.check_conditions) }}'
-         echo '${{ tojson(inputs) }}'
-
       - name: Add deploy key
         if: steps.check_conditions.outputs.execute  == 'true' && steps.check_conditions.outputs.use_template == 'true'
         uses: webfactory/ssh-agent@v0.5.4
