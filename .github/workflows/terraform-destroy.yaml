@@ -56,7 +56,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: deployment
-          ref: ${{ github.events.ACCOUNT_NAME }}
+          ref: ${{ inputs.ACCOUNT_NAME }}
 
       - name: Check Conditions
         id: check_conditions
