@@ -107,16 +107,17 @@ jobs:
           github_token: ${{ github.token }}
           working_directory: deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
           soft_fail_commenter: true
-
-      - name: Checkov Scan
-        id: checkov
-        if: steps.check_conditions.outputs.execute  == 'true' && (github.event_name == 'push' || github.event_name == 'pull_request' )
-        uses: bridgecrewio/checkov-action@master
-        with:
-          directory: deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
-          framework: terraform
-          quiet: true
         continue-on-error: true
+
+#      - name: Checkov Scan
+#        id: checkov
+#        if: steps.check_conditions.outputs.execute  == 'true' && (github.event_name == 'push' || github.event_name == 'pull_request' )
+#        uses: bridgecrewio/checkov-action@master
+#        with:
+#          directory: deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
+#          framework: terraform
+#          quiet: true
+#        continue-on-error: true
 
       - name: Configure AWS Credentials
         if: steps.check_conditions.outputs.execute  == 'true' && inputs.RUNS_ON != 'self-hosted'
