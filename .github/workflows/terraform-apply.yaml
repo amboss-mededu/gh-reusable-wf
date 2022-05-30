@@ -101,11 +101,11 @@ jobs:
           cp -a -n $GITHUB_WORKSPACE/template/state.tf $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
 
       - name: TFSec Scan
-        run: tfsec deployment/${{ inputs.REGION }}/${{ inputs.DIR }} -s --format sarif --out tfsec-results.sarif
+        run: tfsec deployment/${{ inputs.REGION }}/${{ inputs.DIR }} -s --format sarif --out $GITHUB_WORKSPACE/tfsec-results.sarif
         continue-on-error: true
 
       - name: Checkov Scan
-        run: checkov --directory deployment/${{ inputs.REGION }}/${{ inputs.DIR }} --framework terraform --quiet --soft-fail -o sarif --output-file-path checkov-results.sarif
+        run: checkov --directory deployment/${{ inputs.REGION }}/${{ inputs.DIR }} --framework terraform --quiet --soft-fail -o sarif --output-file-path $GITHUB_WORKSPACE/checkov-results.sarif
         continue-on-error: true
 
       - name: Configure AWS Credentials
@@ -166,7 +166,7 @@ jobs:
           repository: ${{ github.repository }}
           branch: ${{ github.head_ref }}
           pr_number: ${{ github.event.number }}
-          sarif-file: tfsec-results.sarif
+          sarif-file: $GITHUB_WORKSPACE/tfsec-results.sarif
           title: TFSec Scan Results
           dry-run: false
 
@@ -178,7 +178,7 @@ jobs:
           repository: ${{ github.repository }}
           branch: ${{ github.head_ref }}
           pr_number: ${{ github.event.number }}
-          sarif-file: checkov-results.sarif
+          sarif-file: $GITHUB_WORKSPACE/checkov-results.sarif
           title: Checkov Scan Results
           dry-run: false
 
