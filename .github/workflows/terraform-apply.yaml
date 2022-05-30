@@ -105,7 +105,7 @@ jobs:
         continue-on-error: true
 
       - name: Checkov Scan
-        run: checkov --directory deployment/${{ inputs.REGION }}/${{ inputs.DIR }} --framework terraform --quiet --soft-fail -o sarif --output-file-path $GITHUB_WORKSPACE/checkov-results.sarif
+        run: checkov --directory deployment/${{ inputs.REGION }}/${{ inputs.DIR }} --framework terraform --quiet --soft-fail -o sarif --output-file-path $GITHUB_WORKSPACE
         continue-on-error: true
 
       - name: Configure AWS Credentials
@@ -178,7 +178,7 @@ jobs:
           repository: ${{ github.repository }}
           branch: ${{ github.head_ref }}
           pr_number: ${{ github.event.number }}
-          sarif-file: $GITHUB_WORKSPACE/checkov-results.sarif
+          sarif-file: $GITHUB_WORKSPACE/results_sarif.sarif
           title: Checkov Scan Results
           dry-run: false
 
