@@ -59,6 +59,9 @@ jobs:
       contents: write
       pull-requests: write
       packages: read
+      issues: write
+      security-events: write
+      statuses: write
     steps:
       - name: Get Code
         uses: actions/checkout@v3
@@ -104,10 +107,6 @@ jobs:
         run: tfsec deployment/${{ inputs.REGION }}/${{ inputs.DIR }} -s --format sarif --out $GITHUB_WORKSPACE/tfsec-results.sarif
         continue-on-error: true
 
-      - name: Checkov Scan
-        run: checkov --directory deployment/${{ inputs.REGION }}/${{ inputs.DIR }} --framework terraform --quiet --soft-fail -o sarif --output-file-path $GITHUB_WORKSPACE
-        continue-on-error: true
-
       - name: Configure AWS Credentials
         if: steps.check_conditions.outputs.execute  == 'true' && inputs.RUNS_ON != 'self-hosted'
         uses: aws-actions/configure-aws-credentials@v1
@@ -138,6 +137,7 @@ jobs:
             -var 'region=${{ inputs.REGION }}' \
             -no-color -lock-timeout=300s \
             -out=$GITHUB_WORKSPACE/terraform-plan-${{ github.run_id }}.output ${{ secrets.ADDITIONAL_ARGS }}
+          checkov -f $GITHUB_WORKSPACE/terraform-plan-${{ github.run_id }}.output --framework terraform --quiet --soft-fail -o sarif  > $GITHUB_WORKSPACE/checkov-results.sarif
         continue-on-error: true
          
       - name: Terraform Refresh
@@ -156,6 +156,7 @@ jobs:
             -var 'region=${{ inputs.REGION }}' \
             -no-color -lock-timeout=300s \
             -out=$GITHUB_WORKSPACE/terraform-plan-${{ github.run_id }}.output ${{ secrets.ADDITIONAL_ARGS }}
+          checkov -f $GITHUB_WORKSPACE/terraform-plan-${{ github.run_id }}.output --framework terraform --quiet --soft-fail -o sarif  > $GITHUB_WORKSPACE/checkov-results.sarif
         continue-on-error: true
 
       - name: TFSEC Scan Results to PR
@@ -178,7 +179,7 @@ jobs:
           repository: ${{ github.repository }}
           branch: ${{ github.head_ref }}
           pr_number: ${{ github.event.number }}
-          sarif-file: $GITHUB_WORKSPACE/results_sarif.sarif
+          sarif-file: $GITHUB_WORKSPACE/checkov-results.sarif
           title: Checkov Scan Results
           dry-run: false
 
