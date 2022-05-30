@@ -38,7 +38,7 @@ jobs:
     name: Workflow
     runs-on: ${{ inputs.RUNS_ON }}
     container: 
-      image: ghcr.io/iaacautomation/devops-tools/deploy:v1.5.0
+      image: public.ecr.aws/k7t9n6p4/deploy:latest
       env:
         AWS_WEB_IDENTITY_TOKEN_FILE: /var/run/secrets/eks.amazonaws.com/serviceaccount/token
         AWS_ROLE_ARN: ${{ secrets.IAM_ROLE }}
@@ -100,24 +100,12 @@ jobs:
           cp -a -n $GITHUB_WORKSPACE/template/${{ inputs.DIR }} $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/
           cp -a -n $GITHUB_WORKSPACE/template/state.tf $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
 
-#      - name: TFSec Scan
-#        if: steps.check_conditions.outputs.execute  == 'true' && ( github.event_name == 'push' || github.event_name == 'pull_request' )
-#        uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
-#        with:
-#          github_token: ${{ github.token }}
-#          working_directory: deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
-#          soft_fail_commenter: true
-#        continue-on-error: true
+      - name: TFSec Scan
+        run: tfsec deployment/${{ inputs.REGION }}/${{ inputs.DIR }} -s --format sarif --out tfsec-results.sarif
 
-#      - name: Checkov Scan
-#        id: checkov
-#        if: steps.check_conditions.outputs.execute  == 'true' && (github.event_name == 'push' || github.event_name == 'pull_request' )
-#        uses: bridgecrewio/checkov-action@master
-#        with:
-#          directory: deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
-#          framework: terraform
-#          quiet: true
-#        continue-on-error: true
+      - name: Checkov Scan
+        run: checkov --directory deployment/${{ inputs.REGION }}/${{ inputs.DIR }} --framework terraform --quiet --soft-fail -o sarif --output-file-path checkov-results.sarif
+        continue-on-error: true
 
       - name: Configure AWS Credentials
         if: steps.check_conditions.outputs.execute  == 'true' && inputs.RUNS_ON != 'self-hosted'
@@ -169,6 +157,28 @@ jobs:
             -no-color -lock-timeout=300s \
             -out=$GITHUB_WORKSPACE/terraform-plan-${{ github.run_id }}.output ${{ secrets.ADDITIONAL_ARGS }}
         continue-on-error: true
+
+      - name: TFSEC Scan Results to PR
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.merged != true && steps.check_conditions.outputs.execute == 'true' && ! contains(steps.plan.outputs.stdout, 'No changes') && steps.plan.outcome != 'skipped' }}
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          branch: ${{ github.head_ref }}
+          pr_number: ${{ github.event.number }}
+          sarif-file: checkov-results.sarif
+          title: Checkov Scan Results
+          dry-run: false
+
+      - name: Checkov Scan Results to PR
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.merged != true && steps.check_conditions.outputs.execute == 'true' && ! contains(steps.plan.outputs.stdout, 'No changes') && steps.plan.outcome != 'skipped' }}
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          branch: ${{ github.head_ref }}
+          pr_number: ${{ github.event.number }}
+          sarif-file: checkov-results.sarif
+          title: Checkov Scan Results
+          dry-run: false
 
       - name: Post Plan output to PR
         uses: actions/github-script@v5
