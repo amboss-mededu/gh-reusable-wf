@@ -160,7 +160,7 @@ jobs:
         continue-on-error: true
 
       - name: TFSEC Scan Results to PR
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.merged != true && steps.check_conditions.outputs.execute == 'true' && ! contains(steps.plan.outputs.stdout, 'No changes') && steps.plan.outcome != 'success' }}
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.merged != true && steps.check_conditions.outputs.execute == 'true' steps.plan.outcome != 'skipped' }}
         uses: tomwillis608/sarif-to-issue-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -172,7 +172,7 @@ jobs:
           dry-run: false
 
       - name: Checkov Scan Results to PR
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.merged != true && steps.check_conditions.outputs.execute == 'true' && ! contains(steps.plan.outputs.stdout, 'No changes') && steps.plan.outcome == 'success' }}
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.merged != true && steps.check_conditions.outputs.execute == 'true' && steps.plan.outcome == 'success' }}
         uses: tomwillis608/sarif-to-issue-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
