@@ -104,7 +104,22 @@ jobs:
           cp -a -n $GITHUB_WORKSPACE/template/state.tf $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
 
       - name: TFSec Scan
-        run: tfsec deployment/${{ inputs.REGION }}/${{ inputs.DIR }} -s --format sarif --out $GITHUB_WORKSPACE/tfsec-results.sarif
+        if: steps.check_conditions.outputs.execute  == 'true' && ( github.event_name == 'push' || github.event_name == 'pull_request' )
+        uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
+        with:
+          github_token: ${{ github.token }}
+          working_directory: deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
+          soft_fail_commenter: true
+        continue-on-error: true
+
+      - name: Checkov Scan
+        id: checkov
+        if: steps.check_conditions.outputs.execute  == 'true' && (github.event_name == 'push' || github.event_name == 'pull_request' )
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
+          framework: terraform
+          quiet: true
         continue-on-error: true
 
       - name: Configure AWS Credentials
@@ -136,8 +151,7 @@ jobs:
             -var-file=$GITHUB_WORKSPACE/deployment/account_info.tfvars \
             -var 'region=${{ inputs.REGION }}' \
             -no-color -lock-timeout=300s \
-            -out=$GITHUB_WORKSPACE/terraform-plan-${{ github.run_id }}.output ${{ secrets.ADDITIONAL_ARGS }}
-          checkov -f $GITHUB_WORKSPACE/terraform-plan-${{ github.run_id }}.output --framework terraform --quiet --soft-fail -o sarif
+            -out=$GITHUB_WORKSPACE/terraform.plan ${{ secrets.ADDITIONAL_ARGS }}
         continue-on-error: true
          
       - name: Terraform Refresh
@@ -155,14 +169,7 @@ jobs:
             -var-file=$GITHUB_WORKSPACE/deployment/account_info.tfvars \
             -var 'region=${{ inputs.REGION }}' \
             -no-color -lock-timeout=300s \
-            -out=$GITHUB_WORKSPACE/terraform-plan-${{ github.run_id }}.output ${{ secrets.ADDITIONAL_ARGS }}
-          checkov -f $GITHUB_WORKSPACE/terraform-plan-${{ github.run_id }}.output --framework terraform --quiet --soft-fail -o sarif  > $GITHUB_WORKSPACE/checkov-results.sarif
-        continue-on-error: true
-
-      - name: debug
-        run: |
-          echo '${{ tojson(github) }}'
-          cat $GITHUB_WORKSPACE/terraform-plan-${{ github.run_id }}.output
+            -out=$GITHUB_WORKSPACE/terraform.plan ${{ secrets.ADDITIONAL_ARGS }}
         continue-on-error: true
 
       - name: Post Plan output to PR
@@ -202,7 +209,7 @@ jobs:
         id: apply
         run: |
           cd $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
-          terraform apply $GITHUB_WORKSPACE/terraform-plan-${{ github.run_id }}.output
+          terraform apply $GITHUB_WORKSPACE/terraform.plan
 
       - name: Post Apply Output to PR
         if: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && steps.check_conditions.outputs.execute == 'true' && steps.plan.outcome == 'success' && ! contains(steps.plan.outputs.stdout, 'No changes') }}
