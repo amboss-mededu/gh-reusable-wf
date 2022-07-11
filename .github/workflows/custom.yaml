@@ -1,0 +1,111 @@
+name: Terraform
+on:
+  workflow_call:
+    inputs:
+      DIR:
+        required: true
+        type: string
+      REGION:
+        required: true
+        type: string
+      TF_REGION:
+        type: string
+        required: false
+        default: eu-west-1
+      RUNS_ON:
+        type: string
+        required: false
+        default: self-hosted
+      ACCOUNT_NAME:
+        type: string
+        required: true
+    secrets:
+      IAM_ROLE:
+        required: true
+      DEPLOY_SSH_KEY:
+        required: false
+    outputs:
+      ACCOUNT_NAME:
+        value: ${{ jobs.terraform.outputs.ACCOUNT_NAME }}
+
+
+jobs:
+  terraform:
+    name: Terraform destroy workflow
+    runs-on: ${{ inputs.RUNS_ON }}
+    container:
+      image: public.ecr.aws/k7t9n6p4/deploy:latest
+      env:
+        AWS_WEB_IDENTITY_TOKEN_FILE: /var/run/secrets/eks.amazonaws.com/serviceaccount/token
+        AWS_ROLE_ARN: ${{ secrets.IAM_ROLE }}
+        TF_IN_AUTOMATION: true
+      volumes:
+        - /var/run/secrets/eks.amazonaws.com/serviceaccount/token:/var/run/secrets/eks.amazonaws.com/serviceaccount/token
+    env:
+      TF_IN_AUTOMATION: true
+    defaults:
+      run:
+        shell: bash
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
+      packages: read
+    steps:
+      - name: Get Code
+        uses: actions/checkout@v3
+        with:
+          path: deployment
+          ref: ${{ inputs.ACCOUNT_NAME }}
+
+      - name: Check Conditions
+        id: check_conditions
+        run: |
+          echo "::set-output name=account_name::${{ inputs.ACCOUNT_NAME }}"
+          if [[ -d $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/eks ]]
+          then
+            mkdir -p $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/eks_services
+            mkdir -p $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/eks_addons
+          fi
+          if [[ -d $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }} ]]
+          then
+            echo "::set-output name=execute::true"
+          else
+            echo "::set-output name=execute::false"
+          fi
+          if [[ $(expr length "${{ secrets.DEPLOY_SSH_KEY }}") > 0 ]]
+          then
+            echo "::set-output name=use_template::true"
+          else
+            echo "::set-output name=use_template::false"
+          fi
+          ls $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }} -l
+
+      - name: debug
+        run: |
+         echo '${{ tojson(steps.check_conditions) }}'
+         echo '${{ tojson(inputs) }}'
+
+      - name: Add deploy key
+        if: steps.check_conditions.outputs.execute  == 'true' && steps.check_conditions.outputs.use_template == 'true'
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Install Aws nuke
+        if: steps.check_conditions.outputs.execute  == 'true' && steps.check_conditions.outputs.use_template == 'true'
+        run: |
+          wget -c https://github.com/rebuy-de/aws-nuke/releases/download/v2.16.0/aws-nuke-v2.16.0-linux-amd64.tar.gz -O - | sudo tar -xz -C $HOME/bin
+
+      - name: Configure AWS Credentials
+        if: steps.check_conditions.outputs.execute  == 'true' && inputs.RUNS_ON != 'self-hosted'
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ${{ inputs.TF_REGION }}
+          role-to-assume: ${{ secrets.IAM_ROLE }}
+          role-session-name: GithubActions-Terraform
+
+      - name: Check nuke
+        if: steps.check_conditions.outputs.execute  == 'true'
+        run: |
+          aws-nuke-v2.16.0-linux-amd64
