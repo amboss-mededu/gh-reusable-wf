@@ -104,12 +104,21 @@ jobs:
           role-to-assume: ${{ secrets.IAM_ROLE }}
           role-session-name: GithubActions-Terraform
 
+      - name: Copy Code
+        if: steps.check_conditions.outputs.execute  == 'true' && steps.check_conditions.outputs.use_template == 'true'
+        run: |
+          git clone git@github.com:amboss-mededu/infra-template template
+          cp -a -n $GITHUB_WORKSPACE/template/${{ inputs.DIR }} $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/
+          cp -a -n $GITHUB_WORKSPACE/template/state.tf $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
+
       - name: Setup Nuke
         if: steps.check_conditions.outputs.execute  == 'true'
         run: |
               wget -c https://github.com/rebuy-de/aws-nuke/releases/download/v2.16.0/aws-nuke-v2.16.0-linux-amd64.tar.gz
               tar -xzf aws-nuke-v2.16.0-linux-amd64.tar.gz -C ./
               pwd
+              ls
+              printenv
 
       - name: Test nuke
         if: steps.check_conditions.outputs.execute  == 'true'
