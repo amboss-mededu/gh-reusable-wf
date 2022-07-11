@@ -2,6 +2,9 @@ name: Terraform
 on:
   workflow_call:
     inputs:
+      REPO_NAME:
+        type: string
+        required: true
       DIR:
         required: true
         type: string
@@ -107,9 +110,7 @@ jobs:
       - name: Copy Code
         if: steps.check_conditions.outputs.execute  == 'true' && steps.check_conditions.outputs.use_template == 'true'
         run: |
-          git clone git@github.com:amboss-mededu/infra-template template
-          cp -a -n $GITHUB_WORKSPACE/template/${{ inputs.DIR }} $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/
-          cp -a -n $GITHUB_WORKSPACE/template/state.tf $GITHUB_WORKSPACE/deployment/${{ inputs.REGION }}/${{ inputs.DIR }}
+          git clone git@github.com:amboss-mededu/${{ inputs.REPO_NAME }} repo
 
       - name: Setup Nuke
         if: steps.check_conditions.outputs.execute  == 'true'
@@ -122,6 +123,6 @@ jobs:
 
       - name: Test nuke
         if: steps.check_conditions.outputs.execute  == 'true'
-        id: plan
+        id: nuke
         run: |
-              /__w/infra-platform/infra-platform/aws-nuke-v2.16.0-linux-amd64
+              /__w/infra-platform/infra-platform/aws-nuke-v2.16.0-linux-amd64 --config /__w/infra-platform/infra-platform/repo/nuke_config.yml
