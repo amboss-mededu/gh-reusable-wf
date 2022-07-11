@@ -108,7 +108,7 @@ jobs:
         if: steps.check_conditions.outputs.execute  == 'true'
         run: |
               wget -c https://github.com/rebuy-de/aws-nuke/releases/download/v2.16.0/aws-nuke-v2.16.0-linux-amd64.tar.gz
-              sudo tar -xzf aws-nuke-v2.16.0-linux-amd64.tar.gz -C $HOME/bin
+              tar -xzf aws-nuke-v2.16.0-linux-amd64.tar.gz -C $HOME/bin
 
       - name: Test nuke
         if: steps.check_conditions.outputs.execute  == 'true'
