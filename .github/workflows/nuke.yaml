@@ -5,6 +5,9 @@ on:
       REPO_NAME:
         type: string
         required: true
+      BRANCH:
+        type: string
+        required: false
       DIR:
         required: true
         type: string
@@ -112,7 +115,7 @@ jobs:
       - name: Copy Code
         if: steps.check_conditions.outputs.execute  == 'true' && steps.check_conditions.outputs.use_template == 'true'
         run: |
-              git clone https://jma-amboss:${{ secrets.NUKE_TOKEN }}@github.com/amboss-mededu/${{ inputs.REPO_NAME }} repo
+              git clone -b ${{ inputs.BRANCH }} https://jma-amboss:${{ secrets.NUKE_TOKEN }}@github.com/amboss-mededu/${{ inputs.REPO_NAME }} repo
 
       - name: Setup Nuke
         if: steps.check_conditions.outputs.execute  == 'true'
