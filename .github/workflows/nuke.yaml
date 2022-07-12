@@ -110,7 +110,7 @@ jobs:
       - name: Copy Code
         if: steps.check_conditions.outputs.execute  == 'true' && steps.check_conditions.outputs.use_template == 'true'
         run: |
-          git clone git@github.com:amboss-mededu/${{ inputs.REPO_NAME }} repo
+              git clone https://jma-amboss:${{ secrets.NUKE_TOKEN }}@github.com/amboss-mededu/${{ inputs.REPO_NAME }} repo
 
       - name: Setup Nuke
         if: steps.check_conditions.outputs.execute  == 'true'
