@@ -130,4 +130,4 @@ jobs:
         if: steps.check_conditions.outputs.execute  == 'true'
         id: nuke
         run: |
-              /__w/infra-platform/infra-platform/aws-nuke-v2.16.0-linux-amd64 --access-key-id $AWS_ACCESS_KEY_ID --secret-access-key $AWS_SECRET_ACCESS_KEY --session-token $AWS_SESSION_TOKEN --config /__w/infra-platform/infra-platform/repo/nuke_config.yml
+              echo plat-new-infra|/__w/infra-platform/infra-platform/aws-nuke-v2.16.0-linux-amd64 --access-key-id $AWS_ACCESS_KEY_ID --secret-access-key $AWS_SECRET_ACCESS_KEY --session-token $AWS_SESSION_TOKEN --config /__w/infra-platform/infra-platform/repo/nuke_config.yml
